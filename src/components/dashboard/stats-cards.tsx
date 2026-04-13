@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { formatBytes, timeAgo } from "@/lib/utils";
 import { BucketStats } from "@/lib/data/types";
 import { AnimatedCard } from "@/components/motion/animated-container";
-import { Database, Layers, Globe, HardDrive, Clock, Users } from "lucide-react";
+import { Database, Layers, Globe, HardDrive, Clock } from "lucide-react";
 
 interface KpiStatsCardProps {
   icon: React.ReactNode;
@@ -98,17 +98,10 @@ export function StatsCards({ stats }: { stats: BucketStats }) {
       description: "Most recent change",
       accentColor: "oklch(0.65 0.18 250)",
     },
-    {
-      icon: <Users className="h-4 w-4" />,
-      label: "Maintainers",
-      value: stats.maintainerCount.toString(),
-      description: "Team members",
-      accentColor: "oklch(0.70 0.12 30)",
-    },
   ];
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
       {cards.map((card, i) => (
         <AnimatedCard key={card.label} index={i}>
           <KpiStatsCard {...card} />
