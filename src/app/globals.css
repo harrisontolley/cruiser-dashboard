@@ -7,8 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, monospace;
+  --font-sans: var(--font-geist), "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), "JetBrains Mono Fallback", ui-monospace, monospace;
+  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -29,6 +30,7 @@
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
+  --color-coral: var(--coral);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -63,6 +65,7 @@
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
+  --coral: oklch(0.68 0.17 25);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
@@ -98,6 +101,7 @@
   --muted-foreground: oklch(0.78 0.005 260);
   --accent: oklch(0.20 0.012 265);
   --accent-foreground: oklch(0.95 0.005 260);
+  --coral: oklch(0.72 0.17 25);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 7%);
   --input: oklch(1 0 0 / 10%);
@@ -149,6 +153,23 @@
   background-size: 256px 256px;
 }
 
+/* Coordinate graticule — faint meridian/parallel lines for geospatial flavor */
+.coord-graticule {
+  position: relative;
+}
+.coord-graticule::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, oklch(1 0 0 / 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(1 0 0 / 0.03) 1px, transparent 1px);
+  background-size: 80px 64px;
+  mix-blend-mode: screen;
+  z-index: 1;
+}
+
 /* Card glow effect */
 .card-glow {
   position: relative;
@@ -181,21 +202,31 @@
     inset 0 1px 0 oklch(1 0 0 / 4%);
 }
 
-/* Scan line animation for map */
-@keyframes scan {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
+/* Radar sweep — conic gradient rotation, replaces linear scan-line */
+@keyframes radar-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
-.scan-line::after {
+.radar-sweep {
+  position: relative;
+}
+.radar-sweep::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, oklch(0.78 0.14 195 / 20%), transparent);
-  animation: scan 8s linear infinite;
+  inset: -50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    oklch(0.78 0.14 195 / 0.08) 20deg,
+    oklch(0.78 0.14 195 / 0.18) 45deg,
+    transparent 60deg,
+    transparent 360deg
+  );
+  animation: radar-spin 12s linear infinite;
   pointer-events: none;
-  z-index: 10;
+  z-index: 5;
+  mix-blend-mode: screen;
+  opacity: 0.7;
 }
 
 /* Pulse indicator */
@@ -211,6 +242,8 @@
 .leaflet-container {
   background: oklch(0.105 0.008 265) !important;
   font-family: var(--font-sans) !important;
+  position: relative;
+  z-index: 1;
 }
 .leaflet-tile-pane {
   opacity: 0.85;

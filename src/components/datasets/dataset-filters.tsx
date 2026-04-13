@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, ArrowUpDown } from "lucide-react";
+import { Search, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -70,9 +70,15 @@ export function DatasetFilters({
             variant="ghost"
             size="icon"
             onClick={onToggleSortOrder}
+            aria-label={`Sort ${filter.sortOrder === "asc" ? "ascending" : "descending"}`}
+            title={`Sort ${filter.sortOrder === "asc" ? "ascending" : "descending"}`}
             className="h-8 w-8 rounded-lg"
           >
-            <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+            {filter.sortOrder === "asc" ? (
+              <ArrowUp className="h-3 w-3 text-muted-foreground" />
+            ) : (
+              <ArrowDown className="h-3 w-3 text-muted-foreground" />
+            )}
           </Button>
         </div>
       </div>

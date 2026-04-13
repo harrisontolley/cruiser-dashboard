@@ -50,7 +50,7 @@ export function TemporalTimeline({ datasets }: { datasets: Dataset[] }) {
     <div className="rounded-xl ring-1 ring-white/[0.06] bg-card p-5">
       <div className="mb-5 flex items-center gap-2.5">
         <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-        <h3 className="text-sm font-medium text-foreground">
+        <h3 className="text-sm font-medium text-foreground font-display">
           Temporal Coverage
         </h3>
         <span className="text-xs font-mono text-muted-foreground">

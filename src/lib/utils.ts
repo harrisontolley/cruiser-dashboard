@@ -44,3 +44,26 @@ export function timeAgo(iso: string): string {
   }
   return "just now";
 }
+
+export function daysSince(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+}
+
+export function formatDateTime(iso: string, mode: "relative" | "absolute"): string {
+  return mode === "relative" ? timeAgo(iso) : formatDate(iso);
+}
+
+export function formatTimespan(d: {
+  timespan?: string;
+  temporalRange?: { start: string; end: string | null };
+}): string {
+  if (d.timespan) return d.timespan;
+  if (d.temporalRange) {
+    const start = new Date(d.temporalRange.start).getFullYear();
+    const end = d.temporalRange.end
+      ? new Date(d.temporalRange.end).getFullYear()
+      : "now";
+    return start === end ? `${start}` : `${start}–${end}`;
+  }
+  return "—";
+}

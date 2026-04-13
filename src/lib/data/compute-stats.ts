@@ -11,6 +11,7 @@ import {
 
 export function computeBucketStats(datasets: Dataset[]): BucketStats {
   const totalSizeBytes = datasets.reduce((sum, d) => sum + d.sizeBytes, 0);
+  const fileCountTotal = datasets.reduce((sum, d) => sum + (d.fileCount ?? 0), 0);
   const categories = new Set(datasets.map((d) => d.category));
   const regions = new Set(datasets.map((d) => d.region));
   const maintainers = new Set(
@@ -20,6 +21,14 @@ export function computeBucketStats(datasets: Dataset[]): BucketStats {
     (a, b) =>
       new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
   );
+
+  // Pair coverage: count raw datasets whose pairId has at least one processed sibling
+  const processedPairIds = new Set(
+    datasets.filter((d) => d.stage === "processed" && d.pairId).map((d) => d.pairId!)
+  );
+  const rawWithPairId = datasets.filter((d) => d.stage === "raw" && d.pairId);
+  const rawWithProcessed = rawWithPairId.filter((d) => processedPairIds.has(d.pairId!)).length;
+
   return {
     totalSizeBytes,
     datasetCount: datasets.length,
@@ -27,6 +36,11 @@ export function computeBucketStats(datasets: Dataset[]): BucketStats {
     regionCount: regions.size,
     maintainerCount: maintainers.size,
     lastUpdated: sorted[0]?.lastModified ?? new Date().toISOString(),
+    fileCountTotal,
+    pairCoverage: {
+      rawWithProcessed,
+      rawTotal: rawWithPairId.length,
+    },
   };
 }
 

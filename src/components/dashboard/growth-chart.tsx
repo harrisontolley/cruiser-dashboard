@@ -64,7 +64,7 @@ export function GrowthChart({ data }: { data: GrowthEntry[] }) {
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-          <h3 className="text-sm font-medium text-foreground">
+          <h3 className="text-sm font-medium text-foreground font-display">
             Storage Growth
           </h3>
           <span className="text-xs font-mono text-muted-foreground">

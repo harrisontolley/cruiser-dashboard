@@ -1,8 +1,15 @@
 "use client";
 
 import { Dataset, ALL_CATEGORIES, CATEGORY_BG_CLASSES, CATEGORY_COLORS } from "@/lib/data/types";
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, formatNumber, formatTimespan, daysSince, cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { BboxMiniMap } from "./bbox-mini-map";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Car,
   Navigation,
@@ -11,7 +18,10 @@ import {
   Zap,
   Cloud,
   UsersRound,
-  ExternalLink,
+  ArrowLeftRight,
+  Copy,
+  Check,
+  Clock,
 } from "lucide-react";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -26,14 +36,31 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 
 interface DatasetCardProps {
   dataset: Dataset;
+  siblings?: Dataset[];
   onClick: () => void;
 }
 
-export function DatasetCard({ dataset, onClick }: DatasetCardProps) {
+export function DatasetCard({ dataset, siblings = [], onClick }: DatasetCardProps) {
   const categoryLabel =
     ALL_CATEGORIES.find((c) => c.value === dataset.category)?.label ??
     dataset.category;
   const color = CATEGORY_COLORS[dataset.category];
+  const age = daysSince(dataset.lastModified);
+  const recency: "fresh" | "stale" | null =
+    age <= 30 ? "fresh" : age > 180 ? "stale" : null;
+  const timespanLabel = formatTimespan(dataset);
+  const hasTimespan = timespanLabel !== "—";
+  const tags = dataset.tags ?? [];
+  const visibleTags = tags.slice(0, 3);
+  const hiddenTagCount = Math.max(0, tags.length - visibleTags.length);
+
+  const hasPair = Boolean(dataset.pairId && siblings.length > 0);
+  const { copied, copy } = useCopyToClipboard();
+
+  const handleCopyS3 = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (dataset.s3Url) copy(dataset.s3Url);
+  };
 
   return (
     <button
@@ -48,34 +75,119 @@ export function DatasetCard({ dataset, onClick }: DatasetCardProps) {
         }}
       />
 
-      {/* Category + source */}
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-1.5">
+      {/* Top-right: bbox mini-map + hover copy-s3 */}
+      <div className="absolute right-4 top-4 flex items-center gap-1.5">
+        {dataset.s3Url && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <span
+                  role="button"
+                  tabIndex={-1}
+                  aria-label="Copy S3 path"
+                  onClick={handleCopyS3}
+                  className={cn(
+                    "flex h-6 w-6 items-center justify-center rounded-md bg-card/90 ring-1 ring-white/[0.1] backdrop-blur-sm",
+                    "text-muted-foreground hover:text-foreground hover:bg-white/[0.05]",
+                    "opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer"
+                  )}
+                />
+              }
+            >
+              {copied ? (
+                <Check className="h-3 w-3 text-emerald-400" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
+            </TooltipTrigger>
+            <TooltipContent className="text-xs">
+              {copied ? "Copied!" : "Copy S3 path"}
+            </TooltipContent>
+          </Tooltip>
+        )}
+        {dataset.bbox && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <span className="block rounded-md p-0.5 ring-1 ring-white/[0.06] bg-background/40">
+                  <BboxMiniMap bbox={dataset.bbox} color={color} width={40} height={26} />
+                </span>
+              }
+            />
+            <TooltipContent className="text-xs">
+              Coverage bbox within Australia
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+
+      {/* Badges row */}
+      <div className="flex flex-wrap items-center gap-1.5 mb-3 pr-20">
+        <Badge
+          variant="outline"
+          className={`shrink-0 text-[11px] gap-1 border px-1.5 py-0 h-5 ${CATEGORY_BG_CLASSES[dataset.category]}`}
+        >
+          {CATEGORY_ICONS[dataset.category]}
+          {categoryLabel}
+        </Badge>
+        <Badge
+          variant="outline"
+          className={`shrink-0 text-[10px] font-mono uppercase tracking-wider border px-1.5 py-0 h-5 ${
+            dataset.stage === "raw"
+              ? "bg-orange-500/15 text-orange-400 border-orange-500/30"
+              : "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+          }`}
+        >
+          {dataset.stage === "raw" ? "RAW" : "PROC"}
+        </Badge>
+        {hasPair && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Badge
+                  variant="outline"
+                  className="shrink-0 text-[10px] uppercase tracking-wider border px-1.5 py-0 h-5 gap-1 bg-primary/10 text-primary border-primary/25"
+                >
+                  <ArrowLeftRight className="h-2.5 w-2.5" />
+                  Pair
+                </Badge>
+              }
+            />
+            <TooltipContent className="text-xs max-w-[240px]">
+              <div className="font-medium mb-1">Paired with:</div>
+              <ul className="space-y-0.5">
+                {siblings.map((s) => (
+                  <li key={s.id} className="text-muted-foreground">
+                    <span className="font-mono uppercase tracking-wider text-[10px]">
+                      {s.stage === "raw" ? "RAW" : "PROC"}
+                    </span>{" "}
+                    {s.name}
+                  </li>
+                ))}
+              </ul>
+            </TooltipContent>
+          </Tooltip>
+        )}
+        {recency === "fresh" && (
           <Badge
             variant="outline"
-            className={`shrink-0 text-[11px] gap-1 border px-1.5 py-0 h-5 ${CATEGORY_BG_CLASSES[dataset.category]}`}
+            className="shrink-0 text-[10px] uppercase tracking-wider border px-1.5 py-0 h-5 bg-emerald-500/10 text-emerald-400/90 border-emerald-500/25"
           >
-            {CATEGORY_ICONS[dataset.category]}
-            {categoryLabel}
+            Fresh
           </Badge>
+        )}
+        {recency === "stale" && (
           <Badge
             variant="outline"
-            className={`shrink-0 text-[10px] font-mono uppercase tracking-wider border px-1.5 py-0 h-5 ${
-              dataset.stage === "raw"
-                ? "bg-orange-500/15 text-orange-400 border-orange-500/30"
-                : "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-            }`}
+            className="shrink-0 text-[10px] uppercase tracking-wider border px-1.5 py-0 h-5 bg-white/[0.03] text-muted-foreground border-white/[0.08]"
           >
-            {dataset.stage === "raw" ? "RAW" : "PROC"}
+            Stale
           </Badge>
-        </div>
-        {dataset.sourceUrl && (
-          <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-muted-foreground transition-colors shrink-0" />
         )}
       </div>
 
       {/* Name */}
-      <h3 className="text-sm font-medium text-foreground mb-1 line-clamp-1 group-hover:text-foreground transition-colors">
+      <h3 className="text-sm font-medium text-foreground mb-1 line-clamp-1 pr-20">
         {dataset.name}
       </h3>
 
@@ -89,7 +201,7 @@ export function DatasetCard({ dataset, onClick }: DatasetCardProps) {
         </p>
       )}
 
-      {/* Stats row */}
+      {/* Stats row: Size | Files | Format */}
       <div className="grid grid-cols-3 gap-3 border-t border-white/[0.04] pt-3">
         <div>
           <div className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-0.5">
@@ -101,10 +213,10 @@ export function DatasetCard({ dataset, onClick }: DatasetCardProps) {
         </div>
         <div>
           <div className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-0.5">
-            Timespan
+            Files
           </div>
           <div className="font-mono text-xs text-foreground tabular-nums">
-            {dataset.timespan ? dataset.timespan.split(" ")[0] : "—"}
+            {dataset.fileCount != null ? formatNumber(dataset.fileCount) : "—"}
           </div>
         </div>
         <div>
@@ -117,12 +229,37 @@ export function DatasetCard({ dataset, onClick }: DatasetCardProps) {
         </div>
       </div>
 
-      {/* Maintainer */}
-      {dataset.maintainer && (
-        <div className="mt-3 pt-2.5 border-t border-white/[0.03]">
-          <span className="text-xs text-muted-foreground">
-            @{dataset.maintainer}
-          </span>
+      {/* Optional timespan ghost row */}
+      {hasTimespan && (
+        <div className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
+          <Clock className="h-3 w-3" />
+          <span className="tabular-nums">{timespanLabel}</span>
+        </div>
+      )}
+
+      {/* Tag strip + maintainer */}
+      {(visibleTags.length > 0 || dataset.maintainer) && (
+        <div className="mt-3 pt-2.5 border-t border-white/[0.03] flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1 min-w-0">
+            {visibleTags.map((tag) => (
+              <span
+                key={tag}
+                className="font-mono text-[10px] text-muted-foreground bg-white/[0.03] px-1.5 py-0.5 rounded"
+              >
+                {tag}
+              </span>
+            ))}
+            {hiddenTagCount > 0 && (
+              <span className="font-mono text-[10px] text-muted-foreground/70">
+                +{hiddenTagCount}
+              </span>
+            )}
+          </div>
+          {dataset.maintainer && (
+            <span className="text-[11px] text-muted-foreground shrink-0">
+              @{dataset.maintainer}
+            </span>
+          )}
         </div>
       )}
     </button>

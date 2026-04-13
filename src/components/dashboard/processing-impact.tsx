@@ -383,7 +383,7 @@ export function ProcessingImpact({ datasets }: { datasets: Dataset[] }) {
     <div className="rounded-xl ring-1 ring-white/[0.06] bg-card p-5">
       <div className="mb-5 flex items-center gap-2.5">
         <Layers className="h-4 w-4 text-primary/60" />
-        <h3 className="text-sm font-medium text-foreground">Processing Impact</h3>
+        <h3 className="text-sm font-medium text-foreground font-display">Processing Impact</h3>
         <span className="text-xs font-mono text-muted-foreground">
           {pairs.length} paired dataset{pairs.length !== 1 ? "s" : ""}
         </span>

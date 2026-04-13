@@ -1,32 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { Dataset } from "@/lib/data/types";
-import { useDatasets } from "@/hooks/use-datasets";
+import { Dataset, DatasetFilter, DatasetCategory } from "@/lib/data/types";
 import { DatasetFilters } from "./dataset-filters";
 import { DatasetCard } from "./dataset-card";
-import { DatasetDetailSheet } from "./dataset-detail-sheet";
 import { AnimatedCard } from "@/components/motion/animated-container";
 
-export function DatasetGrid({ datasets: allDatasets }: { datasets: Dataset[] }) {
-  const {
-    datasets,
-    filter,
-    setSearch,
-    setCategories,
-    setSortBy,
-    toggleSortOrder,
-    totalCount,
-  } = useDatasets(allDatasets);
+interface DatasetGridProps {
+  datasets: Dataset[];
+  filter: DatasetFilter;
+  totalCount: number;
+  setSearch: (s: string) => void;
+  setCategories: (c: DatasetCategory[]) => void;
+  setSortBy: (s: DatasetFilter["sortBy"]) => void;
+  toggleSortOrder: () => void;
+  getSiblings: (d: Dataset) => Dataset[];
+  onCardClick: (d: Dataset) => void;
+}
 
-  const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
-
-  const handleCardClick = (dataset: Dataset) => {
-    setSelectedDataset(dataset);
-    setSheetOpen(true);
-  };
-
+export function DatasetGrid({
+  datasets,
+  filter,
+  totalCount,
+  setSearch,
+  setCategories,
+  setSortBy,
+  toggleSortOrder,
+  getSiblings,
+  onCardClick,
+}: DatasetGridProps) {
   return (
     <div className="space-y-6">
       <DatasetFilters
@@ -56,17 +57,15 @@ export function DatasetGrid({ datasets: allDatasets }: { datasets: Dataset[] }) 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {datasets.map((dataset, i) => (
             <AnimatedCard key={dataset.id} index={i}>
-              <DatasetCard dataset={dataset} onClick={() => handleCardClick(dataset)} />
+              <DatasetCard
+                dataset={dataset}
+                siblings={getSiblings(dataset)}
+                onClick={() => onCardClick(dataset)}
+              />
             </AnimatedCard>
           ))}
         </div>
       )}
-
-      <DatasetDetailSheet
-        dataset={selectedDataset}
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-      />
     </div>
   );
 }

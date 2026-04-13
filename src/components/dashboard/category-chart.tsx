@@ -38,7 +38,7 @@ export function CategoryChart({ data }: { data: CategoryStatEntry[] }) {
     <div className="rounded-xl ring-1 ring-white/[0.06] bg-card p-5">
       <div className="mb-4 flex items-center gap-2.5">
         <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-        <h3 className="text-sm font-medium text-foreground">Size by Category</h3>
+        <h3 className="text-sm font-medium text-foreground font-display">Size by Category</h3>
       </div>
       <div className="h-[200px]">
         <ResponsiveContainer width="100%" height="100%">

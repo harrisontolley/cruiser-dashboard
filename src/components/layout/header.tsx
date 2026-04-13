@@ -1,6 +1,6 @@
 "use client";
 
-import { Database, Moon, Sun } from "lucide-react";
+import { Database, Moon, Sun, Command as CommandIcon, Search } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -17,10 +17,12 @@ export function Header({
   datasetCount,
   viewMode,
   onViewModeChange,
+  onCommandOpen,
 }: {
   datasetCount?: number;
   viewMode?: ViewMode;
   onViewModeChange?: (mode: ViewMode) => void;
+  onCommandOpen?: () => void;
 }) {
   const { theme, setTheme } = useTheme();
 
@@ -31,14 +33,16 @@ export function Header({
       transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="sticky top-0 z-50 border-b border-white/[0.06] bg-background/60 backdrop-blur-2xl backdrop-saturate-150"
     >
-      <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-6">
+      <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between gap-3 px-6">
         <div className="flex items-center gap-3">
           <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
             <Database className="h-4 w-4" />
             <span className="pulse-dot absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-background" />
           </div>
           <div className="flex items-baseline gap-2">
-            <h1 className="text-sm font-semibold tracking-tight">DataCruiser</h1>
+            <h1 className="text-sm font-semibold tracking-tight font-display">
+              DataCruiser
+            </h1>
             <span className="hidden sm:inline text-xs font-mono text-muted-foreground uppercase tracking-widest">
               Catalogue
             </span>
@@ -46,6 +50,20 @@ export function Header({
         </div>
 
         <div className="flex items-center gap-3">
+          {onCommandOpen && (
+            <button
+              onClick={onCommandOpen}
+              aria-label="Open command palette"
+              className="hidden md:flex items-center gap-2 rounded-lg bg-card/60 px-3 py-1.5 text-xs text-muted-foreground ring-1 ring-white/[0.06] hover:ring-white/[0.12] hover:text-foreground transition-all"
+            >
+              <Search className="h-3 w-3" />
+              <span>Search…</span>
+              <kbd className="inline-flex items-center gap-0.5 rounded border border-white/[0.06] bg-white/[0.03] px-1 py-0 font-mono text-[10px] text-muted-foreground">
+                <CommandIcon className="h-2.5 w-2.5" />K
+              </kbd>
+            </button>
+          )}
+
           {/* Stage Toggle */}
           {viewMode && onViewModeChange && (
             <div className="flex items-center rounded-full bg-card/50 p-0.5 ring-1 ring-white/[0.06]">
@@ -66,10 +84,10 @@ export function Header({
             </div>
           )}
 
-          <div className="hidden sm:flex items-center gap-2 rounded-full bg-card/50 px-3 py-1 ring-1 ring-white/[0.06]">
+          <div className="hidden lg:flex items-center gap-2 rounded-full bg-card/50 px-3 py-1 ring-1 ring-white/[0.06]">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             <span className="text-xs font-mono text-muted-foreground">
-              {datasetCount ?? 0} datasets connected
+              {datasetCount ?? 0} datasets
             </span>
           </div>
           <Button

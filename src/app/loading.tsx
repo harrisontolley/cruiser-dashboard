@@ -19,9 +19,9 @@ export default function Loading() {
 
       <main className="flex-1">
         <div className="mx-auto max-w-[1400px] space-y-6 px-6 py-6">
-          {/* Stats cards */}
-          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
-            {Array.from({ length: 6 }).map((_, i) => (
+          {/* Stats cards — 5 KPIs */}
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
+            {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-[100px] rounded-xl" />
             ))}
           </div>
@@ -29,19 +29,7 @@ export default function Loading() {
           {/* Coverage map */}
           <Skeleton className="h-[420px] rounded-xl" />
 
-          {/* Charts row */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Skeleton className="h-[300px] rounded-xl" />
-            <div className="grid gap-6">
-              <Skeleton className="h-[140px] rounded-xl" />
-              <Skeleton className="h-[140px] rounded-xl" />
-            </div>
-          </div>
-
-          {/* Growth chart */}
-          <Skeleton className="h-[300px] rounded-xl" />
-
-          {/* Dataset grid */}
+          {/* Dataset grid (now before analytics) */}
           <div className="space-y-6">
             <div>
               <Skeleton className="h-5 w-24 mb-1" />
@@ -53,6 +41,9 @@ export default function Loading() {
               ))}
             </div>
           </div>
+
+          {/* Analytics collapsible (collapsed header only) */}
+          <Skeleton className="h-[68px] rounded-xl" />
         </div>
       </main>
     </div>

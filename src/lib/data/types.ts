@@ -62,6 +62,11 @@ export interface BucketStats {
   regionCount: number;
   maintainerCount: number;
   lastUpdated: string;
+  fileCountTotal: number;
+  pairCoverage: {
+    rawWithProcessed: number;
+    rawTotal: number;
+  };
 }
 
 export interface DatasetFilter {
