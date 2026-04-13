@@ -1,0 +1,182 @@
+{
+  "generatedAt": "2026-04-09T03:47:29.775Z",
+  "bucket": "datacruiser-stdb",
+  "datasetCount": 6,
+  "totalSizeBytes": 269755993169,
+  "datasets": [
+    {
+      "id": "raw-compass-iot",
+      "name": "COMPASS IoT Raw Data",
+      "category": "gps-trajectory",
+      "region": "NSW, Australia",
+      "stage": "raw",
+      "pairId": "compass-iot",
+      "description": "UNSW Data Science School vehicle type analysis data from COMPASS IoT sensors. Contains raw CSV exports of vehicle detection and classification records across the NSW road network.",
+      "sizeBytes": 155759777928,
+      "fileCount": 1500,
+      "format": "CSV",
+      "lastModified": "2026-03-25T02:59:26.000Z",
+      "s3Url": "s3://datacruiser-stdb/raw/compass-iot/",
+      "bbox": [
+        150.5,
+        -34.2,
+        151.5,
+        -33.5
+      ],
+      "tags": [
+        "gps",
+        "vehicle",
+        "iot",
+        "compass",
+        "unsw"
+      ],
+      "maintainer": "Harry Tolley"
+    },
+    {
+      "id": "raw-compass-iot-2025-data-zip",
+      "name": "COMPASS IoT 2025 Archive",
+      "category": "gps-trajectory",
+      "region": "NSW, Australia",
+      "stage": "raw",
+      "pairId": "compass-iot",
+      "description": "Compressed archive of COMPASS IoT raw data collected during 2025. Contains vehicle detection and classification records.",
+      "sizeBytes": 54638399815,
+      "fileCount": 1,
+      "format": "ZIP",
+      "lastModified": "2026-04-01T00:32:36.000Z",
+      "s3Url": "s3://datacruiser-stdb/raw/compass-iot_2025_data.zip",
+      "bbox": [
+        150.5,
+        -34.2,
+        151.5,
+        -33.5
+      ],
+      "tags": [
+        "gps",
+        "vehicle",
+        "iot",
+        "compass",
+        "archive"
+      ],
+      "maintainer": "Harry Tolley"
+    },
+    {
+      "id": "processed-compass-iot",
+      "name": "COMPASS IoT Processed",
+      "category": "gps-trajectory",
+      "region": "NSW, Australia",
+      "stage": "processed",
+      "pairId": "compass-iot",
+      "description": "Processed COMPASS IoT trip and ping data in Apache Iceberg format. Partitioned by StartDate with trip trajectories and GPS pings as separate Iceberg tables.",
+      "sizeBytes": 37822531475,
+      "fileCount": 866,
+      "format": "Parquet",
+      "lastModified": "2026-03-26T04:21:48.000Z",
+      "s3Url": "s3://datacruiser-stdb/processed/compass-iot/",
+      "bbox": [
+        150.5,
+        -34.2,
+        151.5,
+        -33.5
+      ],
+      "tags": [
+        "gps",
+        "vehicle",
+        "iot",
+        "compass",
+        "iceberg",
+        "trips",
+        "pings"
+      ],
+      "maintainer": "Harry Tolley"
+    },
+    {
+      "id": "raw-compass-iot-data-au-2026-tar-gz",
+      "name": "COMPASS IoT 2026 Archive",
+      "category": "gps-trajectory",
+      "region": "Australia",
+      "stage": "raw",
+      "pairId": "compass-iot",
+      "description": "Compressed archive of COMPASS IoT raw data collected during 2026. Contains vehicle detection and classification records across Australia.",
+      "sizeBytes": 21403872337,
+      "fileCount": 1,
+      "format": "GZ",
+      "lastModified": "2026-04-09T02:00:23.000Z",
+      "s3Url": "s3://datacruiser-stdb/raw/compass_iot_data_au_2026.tar.gz",
+      "bbox": [
+        150.5,
+        -34.2,
+        151.5,
+        -33.5
+      ],
+      "tags": [
+        "gps",
+        "vehicle",
+        "iot",
+        "compass",
+        "archive"
+      ],
+      "maintainer": "Harry Tolley"
+    },
+    {
+      "id": "processed-overture-ggearth",
+      "name": "Overture + Satellite Embeddings H3",
+      "category": "satellite",
+      "region": "Sydney & Melbourne",
+      "stage": "processed",
+      "description": "Google Alpha Earth satellite embedding vectors at H3 resolution 8 and 9, joined with Overture Maps Foundation data for Sydney and Melbourne. Captures land use, built environment, and vegetation patterns.",
+      "sizeBytes": 126880618,
+      "fileCount": 4,
+      "format": "Parquet",
+      "lastModified": "2026-03-25T04:22:41.000Z",
+      "s3Url": "s3://datacruiser-stdb/processed/overture_ggearth/",
+      "bbox": [
+        144.5,
+        -38.2,
+        151.5,
+        -33.5
+      ],
+      "tags": [
+        "satellite",
+        "embeddings",
+        "h3",
+        "overture",
+        "alpha-earth"
+      ],
+      "maintainer": "Harry Tolley",
+      "license": "Alpha Earth - CC BY 4.0 (non-commercial download, register for commercial)",
+      "sourceUrl": "https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_SATELLITE_EMBEDDING_V1_ANNUAL#terms-of-use",
+      "timespan": "Overture - Feb 18th Snapshot. Satellite Embeddings - 2025",
+      "temporalRange": {
+        "start": "2025-02-18",
+        "end": null
+      }
+    },
+    {
+      "id": "raw-du-tfnsw-prediction",
+      "name": "TfNSW Traffic Prediction",
+      "category": "traffic",
+      "region": "NSW, Australia",
+      "stage": "raw",
+      "description": "Transport for NSW traffic volume prediction analysis. Includes station information, baseline vs model metrics comparisons, and prediction visualisations.",
+      "sizeBytes": 4530996,
+      "fileCount": 6,
+      "format": "CSV",
+      "lastModified": "2026-03-25T23:28:15.000Z",
+      "s3Url": "s3://datacruiser-stdb/raw/du_tfnsw_prediction/",
+      "bbox": [
+        149,
+        -37.5,
+        154,
+        -28
+      ],
+      "tags": [
+        "traffic",
+        "prediction",
+        "tfnsw",
+        "volume"
+      ],
+      "maintainer": "Du Yin"
+    }
+  ]
+}
