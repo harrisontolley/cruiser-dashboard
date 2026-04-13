@@ -1,0 +1,100 @@
+{
+  "bucket": "datacruiser-stdb",
+  "region": "ap-southeast-2",
+  "datasets": {
+    "raw/compass-iot/": {
+      "name": "COMPASS IoT Raw Data",
+      "category": "gps-trajectory",
+      "region": "NSW, Australia",
+      "stage": "raw",
+      "pairId": "compass-iot",
+      "description": "UNSW Data Science School vehicle type analysis data from COMPASS IoT sensors. Contains raw CSV exports of vehicle detection and classification records across the NSW road network.",
+      "bbox": [150.5, -34.2, 151.5, -33.5],
+      "tags": ["gps", "vehicle", "iot", "compass", "unsw"],
+      "maintainer": "Harry Tolley"
+    },
+    "processed/compass-iot/": {
+      "name": "COMPASS IoT Processed",
+      "category": "gps-trajectory",
+      "region": "NSW, Australia",
+      "stage": "processed",
+      "pairId": "compass-iot",
+      "description": "Processed COMPASS IoT trip and ping data in Apache Iceberg format. Partitioned by StartDate with trip trajectories and GPS pings as separate Iceberg tables.",
+      "bbox": [150.5, -34.2, 151.5, -33.5],
+      "tags": ["gps", "vehicle", "iot", "compass", "iceberg", "trips", "pings"],
+      "maintainer": "Harry Tolley"
+    },
+    "raw/du_tfnsw_prediction/": {
+      "name": "TfNSW Traffic Prediction",
+      "category": "traffic",
+      "region": "NSW, Australia",
+      "stage": "raw",
+      "description": "Transport for NSW traffic volume prediction analysis. Includes station information, baseline vs model metrics comparisons, and prediction visualisations.",
+      "bbox": [149.0, -37.5, 154.0, -28.0],
+      "tags": ["traffic", "prediction", "tfnsw", "volume"],
+      "maintainer": "Du Yin"
+    },
+    "raw/compass-iot_2025_data.zip": {
+      "name": "COMPASS IoT 2025 Archive",
+      "category": "gps-trajectory",
+      "region": "NSW, Australia",
+      "stage": "raw",
+      "pairId": "compass-iot",
+      "description": "Compressed archive of COMPASS IoT raw data collected during 2025. Contains vehicle detection and classification records.",
+      "bbox": [150.5, -34.2, 151.5, -33.5],
+      "tags": ["gps", "vehicle", "iot", "compass", "archive"],
+      "maintainer": "Harry Tolley"
+    },
+    "raw/compass_iot_data_au_2026.tar.gz": {
+      "name": "COMPASS IoT 2026 Archive",
+      "category": "gps-trajectory",
+      "region": "Australia",
+      "stage": "raw",
+      "pairId": "compass-iot",
+      "description": "Compressed archive of COMPASS IoT raw data collected during 2026. Contains vehicle detection and classification records across Australia.",
+      "bbox": [150.5, -34.2, 151.5, -33.5],
+      "tags": ["gps", "vehicle", "iot", "compass", "archive"],
+      "maintainer": "Harry Tolley"
+    },
+    "raw/overture/": {
+      "name": "Overture Maps Raw Extracts",
+      "category": "satellite",
+      "region": "Sydney & Melbourne",
+      "stage": "raw",
+      "pairId": "overture",
+      "description": "Raw GeoParquet extracts from Overture Maps Foundation covering 11 layers (roads, POIs, buildings, landuse, addresses, infrastructure, land cover, connectors, building parts, divisions, bathymetry) clipped to city boundaries.",
+      "bbox": [144.5, -38.2, 151.5, -33.5],
+      "tags": ["overture", "roads", "buildings", "pois", "landuse", "geoparquet"],
+      "timespan": "Overture 2026-02-18.0 release",
+      "temporalRange": { "start": "2026-02-18", "end": null },
+      "maintainer": "Harry Tolley"
+    },
+    "processed/overture/": {
+      "name": "Overture Maps H3 Hex Features",
+      "category": "satellite",
+      "region": "Sydney & Melbourne",
+      "stage": "processed",
+      "pairId": "overture",
+      "description": "ML-ready H3 hex-level aggregated features from Overture Maps data. 50+ feature columns covering road density, POI counts, building stats, landuse mix, and more with log1p and binary transforms.",
+      "bbox": [144.5, -38.2, 151.5, -33.5],
+      "tags": ["overture", "h3", "hex", "ml-features", "aggregated", "geoparquet"],
+      "timespan": "Overture 2026-02-18.0 release",
+      "temporalRange": { "start": "2026-02-18", "end": null },
+      "maintainer": "Harry Tolley"
+    },
+    "processed/overture_ggearth/": {
+      "name": "Overture + Satellite Embeddings H3",
+      "category": "satellite",
+      "region": "Sydney & Melbourne",
+      "stage": "processed",
+      "description": "Google Alpha Earth satellite embedding vectors at H3 resolution 8 and 9, joined with Overture Maps Foundation data for Sydney and Melbourne. Captures land use, built environment, and vegetation patterns.",
+      "bbox": [144.5, -38.2, 151.5, -33.5],
+      "tags": ["satellite", "embeddings", "h3", "overture", "alpha-earth"],
+      "license": "Alpha Earth - CC BY 4.0 (non-commercial download, register for commercial)",
+      "sourceUrl": "https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_SATELLITE_EMBEDDING_V1_ANNUAL#terms-of-use",
+      "timespan": "Overture - Feb 18th Snapshot. Satellite Embeddings - 2025",
+      "temporalRange": { "start": "2025-02-18", "end": null },
+      "maintainer": "Harry Tolley"
+    }
+  }
+}

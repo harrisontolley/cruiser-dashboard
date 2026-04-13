@@ -7,8 +7,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, monospace;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -84,37 +84,37 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: oklch(0.105 0.008 265);
+  --foreground: oklch(0.95 0.005 260);
+  --card: oklch(0.145 0.008 265);
+  --card-foreground: oklch(0.95 0.005 260);
+  --popover: oklch(0.145 0.008 265);
+  --popover-foreground: oklch(0.95 0.005 260);
+  --primary: oklch(0.78 0.14 195);
+  --primary-foreground: oklch(0.105 0.008 265);
+  --secondary: oklch(0.20 0.008 265);
+  --secondary-foreground: oklch(0.95 0.005 260);
+  --muted: oklch(0.20 0.008 265);
+  --muted-foreground: oklch(0.78 0.005 260);
+  --accent: oklch(0.20 0.012 265);
+  --accent-foreground: oklch(0.95 0.005 260);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --border: oklch(1 0 0 / 7%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.78 0.14 195);
+  --chart-1: oklch(0.78 0.14 195);
+  --chart-2: oklch(0.65 0.18 250);
+  --chart-3: oklch(0.70 0.12 165);
+  --chart-4: oklch(0.60 0.15 280);
+  --chart-5: oklch(0.55 0.10 210);
+  --sidebar: oklch(0.12 0.008 265);
+  --sidebar-foreground: oklch(0.95 0.005 260);
+  --sidebar-primary: oklch(0.78 0.14 195);
+  --sidebar-primary-foreground: oklch(0.95 0.005 260);
+  --sidebar-accent: oklch(0.20 0.008 265);
+  --sidebar-accent-foreground: oklch(0.95 0.005 260);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.55 0 0);
 }
 
 @layer base {
@@ -127,4 +127,111 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Ground station dot grid background */
+.bg-grid-pattern {
+  background-image:
+    radial-gradient(circle at 1px 1px, oklch(1 0 0 / 4%) 1px, transparent 0);
+  background-size: 32px 32px;
+}
+
+/* Subtle noise texture overlay */
+.noise-overlay::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 100;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* Card glow effect */
+.card-glow {
+  position: relative;
+}
+.card-glow::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    oklch(0.78 0.14 195 / 15%) 0%,
+    transparent 40%,
+    transparent 60%,
+    oklch(0.65 0.18 250 / 10%) 100%
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.card-glow:hover::before {
+  opacity: 1;
+}
+
+/* Map container glow */
+.map-glow {
+  box-shadow:
+    0 0 0 1px oklch(0.78 0.14 195 / 8%),
+    0 0 40px -10px oklch(0.78 0.14 195 / 8%),
+    inset 0 1px 0 oklch(1 0 0 / 4%);
+}
+
+/* Scan line animation for map */
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+.scan-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, oklch(0.78 0.14 195 / 20%), transparent);
+  animation: scan 8s linear infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Pulse indicator */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.pulse-dot {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Leaflet overrides for dark theme */
+.leaflet-container {
+  background: oklch(0.105 0.008 265) !important;
+  font-family: var(--font-sans) !important;
+}
+.leaflet-tile-pane {
+  opacity: 0.85;
+}
+.leaflet-control-zoom {
+  border: none !important;
+}
+.leaflet-control-zoom a {
+  background: oklch(0.18 0.008 265 / 90%) !important;
+  color: oklch(0.65 0 0) !important;
+  border: 1px solid oklch(1 0 0 / 8%) !important;
+  backdrop-filter: blur(8px);
+}
+.leaflet-control-zoom a:hover {
+  background: oklch(0.22 0.008 265 / 90%) !important;
+  color: oklch(0.85 0 0) !important;
+}
+
+/* Recharts overrides */
+.recharts-default-tooltip {
+  background: oklch(0.145 0.008 265) !important;
+  border: 1px solid oklch(1 0 0 / 8%) !important;
+  border-radius: 8px !important;
 }
