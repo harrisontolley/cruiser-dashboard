@@ -3263,6 +3263,10 @@ def main() -> None:
         "--upload-s3", action="store_true",
         help="Upload outputs to S3 after pipeline completion.",
     )
+    parser.add_argument(
+        "--s3-bucket", default=None,
+        help="Override default S3 bucket (must start with 'unsw-cse-' for the InstanceS3WithSSM profile).",
+    )
 
     args = parser.parse_args()
 
@@ -3352,13 +3356,16 @@ def main() -> None:
         for year in args.releases:
             tag = RELEASE_TAGS[year]
             logger.info("[%s] Uploading to S3 ...", year)
-            upload_city_to_s3(
+            upload_kwargs = dict(
                 city=args.city,
                 release=tag,
                 h3_resolution=args.h3_resolution,
                 include_satellite=args.satellite,
                 data_dir=data_dir,
             )
+            if args.s3_bucket:
+                upload_kwargs["bucket"] = args.s3_bucket
+            upload_city_to_s3(**upload_kwargs)
 
     if failed == len(results):
         sys.exit(1)

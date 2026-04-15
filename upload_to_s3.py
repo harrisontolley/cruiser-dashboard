@@ -38,7 +38,7 @@ logger = logging.getLogger("upload_to_s3")
 # Constants
 # ---------------------------------------------------------------------------
 
-BUCKET_DEFAULT = "datacruiser-stdb"
+BUCKET_DEFAULT = "unsw-cse-cruiser-overture"
 REGION_DEFAULT = "ap-southeast-2"
 DATA_DIR_DEFAULT = Path.cwd() / "data"
 
