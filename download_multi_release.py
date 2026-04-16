@@ -564,7 +564,7 @@ def _parse_overture_speed_limits(speed_limits: object) -> float | None:
     """Parse Overture speed_limits structured field to km/h."""
     if speed_limits is None or (isinstance(speed_limits, float) and np.isnan(speed_limits)):
         return None
-    if isinstance(speed_limits, (list, tuple)):
+    if isinstance(speed_limits, (list, tuple, np.ndarray)):
         for limit in speed_limits:
             if not isinstance(limit, dict):
                 continue
@@ -591,7 +591,7 @@ def _parse_level_rules(level_rules: object) -> int | None:
     """Extract numeric level from Overture level_rules structured field."""
     if level_rules is None or (isinstance(level_rules, float) and np.isnan(level_rules)):
         return None
-    if isinstance(level_rules, (list, tuple)):
+    if isinstance(level_rules, (list, tuple, np.ndarray)):
         for rule in level_rules:
             if not isinstance(rule, dict):
                 continue
@@ -630,7 +630,7 @@ def _parse_road_surface(road_surface: object) -> str | None:
         return None
     if isinstance(road_surface, str):
         return road_surface if road_surface else None
-    if isinstance(road_surface, (list, tuple)):
+    if isinstance(road_surface, (list, tuple, np.ndarray)):
         for entry in road_surface:
             if isinstance(entry, dict):
                 val = entry.get("value")
@@ -647,7 +647,7 @@ def _parse_width_rules(width_rules: object) -> float | None:
         return None
     if isinstance(width_rules, (int, float)) and not np.isnan(width_rules):
         return float(width_rules)
-    if isinstance(width_rules, (list, tuple)):
+    if isinstance(width_rules, (list, tuple, np.ndarray)):
         for rule in width_rules:
             if not isinstance(rule, dict):
                 continue
@@ -666,7 +666,7 @@ def _parse_road_flags(road_flags: object) -> dict[str, bool]:
     result = {"is_link": False, "is_under_construction": False}
     if road_flags is None or (isinstance(road_flags, float) and np.isnan(road_flags)):
         return result
-    if isinstance(road_flags, (list, tuple)):
+    if isinstance(road_flags, (list, tuple, np.ndarray)):
         for flag in road_flags:
             if isinstance(flag, str):
                 if "link" in flag.lower():
@@ -675,7 +675,7 @@ def _parse_road_flags(road_flags: object) -> dict[str, bool]:
                     result["is_under_construction"] = True
             elif isinstance(flag, dict):
                 values = flag.get("values") or []
-                if isinstance(values, (list, tuple)):
+                if isinstance(values, (list, tuple, np.ndarray)):
                     for v in values:
                         v_str = str(v).lower()
                         if "link" in v_str:
@@ -695,7 +695,7 @@ def _parse_access_restrictions(access_restrictions: object) -> dict[str, bool]:
     }
     if access_restrictions is None or (isinstance(access_restrictions, float) and np.isnan(access_restrictions)):
         return result
-    if not isinstance(access_restrictions, (list, tuple)):
+    if not isinstance(access_restrictions, (list, tuple, np.ndarray)):
         return result
     for entry in access_restrictions:
         if not isinstance(entry, dict):
@@ -708,7 +708,7 @@ def _parse_access_restrictions(access_restrictions: object) -> dict[str, bool]:
         if not isinstance(when, dict):
             continue
         modes = when.get("mode", [])
-        if not isinstance(modes, (list, tuple)):
+        if not isinstance(modes, (list, tuple, np.ndarray)):
             modes = [modes]
         for mode in modes:
             mode_str = str(mode).lower()
@@ -727,7 +727,7 @@ def _parse_subclass_rules(subclass_rules: object) -> str | None:
         return None
     if isinstance(subclass_rules, str):
         return subclass_rules if subclass_rules else None
-    if isinstance(subclass_rules, (list, tuple)):
+    if isinstance(subclass_rules, (list, tuple, np.ndarray)):
         for rule in subclass_rules:
             if isinstance(rule, str):
                 return rule
@@ -743,7 +743,7 @@ def _parse_routes(routes: object) -> dict:
     result = {"route_count": 0, "has_national_route": False}
     if routes is None or (isinstance(routes, float) and np.isnan(routes)):
         return result
-    if not isinstance(routes, (list, tuple)):
+    if not isinstance(routes, (list, tuple, np.ndarray)):
         return result
     national_patterns = {"US:I", "US:US", "AU:N", "AU:A", "GB:M", "GB:A", "DE:B",
                          "FR:N", "FR:A", "IT:A", "ES:A", "JP:N", "NZ:SH", "CA:T"}
@@ -784,7 +784,7 @@ def _parse_speed_limits_full(speed_limits: object) -> dict:
     if isinstance(speed_limits, (int, float)) and not np.isnan(speed_limits):
         result["max_speed_kmh"] = float(speed_limits)
         return result
-    if not isinstance(speed_limits, (list, tuple)):
+    if not isinstance(speed_limits, (list, tuple, np.ndarray)):
         return result
 
     def _convert_speed(speed_obj: dict) -> float | None:
@@ -826,7 +826,7 @@ def _parse_categories_alternate(categories: object) -> str | None:
         return None
     if isinstance(categories, str):
         return categories if categories else None
-    if isinstance(categories, (list, tuple)):
+    if isinstance(categories, (list, tuple, np.ndarray)):
         valid = [str(c) for c in categories if c is not None]
         return "|".join(valid) if valid else None
     return None
