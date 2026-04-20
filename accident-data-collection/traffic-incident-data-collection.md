@@ -48,9 +48,9 @@ Since the target window has passed, sources are ranked by **what data is still r
 | Source | Retention | March 2026 Available Until | Action |
 |--------|-----------|---------------------------|--------|
 | TfNSW Historical Traffic API | 3 months rolling | ~June 2026 | **Query immediately** |
-| TfNSW `/live/hazards/*/closed` | Unknown (weeks–months) | **Check ASAP** | Test endpoint for March data |
-| QLDTraffic `/v2/events` | Unknown — may include past events | **Check ASAP** | Query with date filters |
-| VicRoads Unplanned Disruptions | Unknown — closed incidents may persist | **Check ASAP** | Request API token, then test |
+| TfNSW `/live/hazards/incident/closed` | ~24 hours only (confirmed) | — | Useless for backfill |
+| QLDTraffic `/v2/events/past-one-hour` | 60 min rolling (confirmed per API spec v1.10) | — | Useless for backfill; email TMR |
+| DTP Victoria Unplanned Disruptions v2 | Current-active-only (no date/status filter) | — | Useless for backfill; email `PTdataprogram@transport.vic.gov.au` |
 
 ### Priority 2: Emergency / Aggregator Feeds
 
@@ -121,30 +121,60 @@ All Australian state government traffic APIs use **Creative Commons Attribution 
 
 ---
 
-### 2.2 Victoria — VicRoads / Department of Transport and Planning
+### 2.2 Victoria — Department of Transport and Planning (DTP)
+
+> **Audit correction (20 Apr 2026)**: the legacy VicRoads platforms
+> (`api.vicroads.vic.gov.au` and the Data Exchange Platform
+> `data-exchange.vicroads.vic.gov.au`) were both decommissioned on
+> **30 September 2025**. All transport APIs are now hosted on the Transport
+> Victoria Open Data Portal. The old `traffic_requests@vicroads.vic.gov.au`
+> mailbox no longer serves this purpose. Registration is self-serve; a
+> data-request email to `PTdataprogram@transport.vic.gov.au` is only required
+> for historical extracts or other items not reachable through the public API.
 
 | Field | Detail |
 |-------|--------|
-| **Portal** | https://data-exchange.vicroads.vic.gov.au/ |
-| **Open Data** | https://discover.data.vic.gov.au/dataset/unplanned-disruptions-road |
-| **Auth** | Email `traffic_requests@vicroads.vic.gov.au` with subject "API Token Request" — token in `KeyID` header |
-| **Rate Limit** | 20 calls per 60 seconds |
+| **Portal** | https://opendata.transport.vic.gov.au/ (Transport Victoria Open Data Portal) |
+| **Dataset page** | https://discover.data.vic.gov.au/dataset/unplanned-disruptions-road |
+| **Base URL** | `https://api.opendata.transport.vic.gov.au/opendata/roads/disruptions/unplanned/v2` |
+| **Auth** | Create account on the portal → API key auto-generated; pass via `Ocp-Apim-Subscription-Key` HTTP header (or `subscription-key` query param) |
+| **Rate Limit** | **10 calls per minute** (per current OpenAPI spec) |
 | **Update Frequency** | Every 60 seconds |
-| **License** | CC-BY 4.0 |
-| **Format** | JSON (OpenAPI spec available) |
-| **Coverage** | Melbourne Controlled Area + DTP roads statewide |
+| **License** | CC BY 4.0 International |
+| **Format** | GeoJSON |
+| **Coverage** | Melbourne Controlled Area + DTP-managed roads statewide |
 | **Cost** | Free |
+| **Data-request contact** | `PTdataprogram@transport.vic.gov.au` (for historical extracts, FOI redirects, etc.) |
 
-**Data Model**: Parent-child structure (Incident -> Location Impact). Includes:
-- Unplanned disruptions (crashes, breakdowns, hazards)
-- Lane closures
-- Tow allocations in Melbourne Controlled Area
+**Data model**: GeoJSON FeatureCollection. Each feature includes `impactId`,
+`eventType`, `eventSubType`, `eventId`, `status`, `created`, `lastUpdated`,
+`lastActive`, `lastClosed`, `closedRoadName`, `melway`, `description`,
+`roadAccessType`, plus nested `reference` (road/locality/LGA/bus/tram routes),
+`source` (`sourceName`, `sourceId`), and `impact` (`direction`, `impactType`).
+Includes unplanned disruptions (crashes, breakdowns, hazards), lane closures,
+and tow allocations in the Melbourne Controlled Area.
 
-**OpenAPI Spec**: https://opendata.transport.vic.gov.au/dataset/af595015-e191-45e5-ab89-6ebca7257e54/resource/e49bbb1b-4764-4736-a629-02c339ebaab1/download/unplanned_road_disruptions.openapi.json
+**OpenAPI spec**: https://opendata.transport.vic.gov.au/dataset/af595015-e191-45e5-ab89-6ebca7257e54/resource/e49bbb1b-4764-4736-a629-02c339ebaab1/download/unplanned_road_disruptions.openapi.json
 
-**Action Required**: Email for API token ASAP — manual approval process, may take days.
+**Query parameters (the only ones)**:
 
-**Assessment**: Good real-time data but manual token request is a friction point. The 60-second update frequency makes this the most granular source.
+| Parameter | Default | Allowed values |
+|-----------|---------|----------------|
+| `page` | 1 | 1–9 |
+| `limit` | 0 | 0, 100, 200, 300, 400, 500 |
+
+No date range, status, area or ID filter — returns only the current active
+set. Max 9 × 500 = 4500 records per snapshot, which is comfortably above the
+typical active count for Melbourne.
+
+**Action required**:
+1. Create account at `opendata.transport.vic.gov.au` — API key auto-generated
+2. Email `PTdataprogram@transport.vic.gov.au` separately to request the March
+   2026 historical extract
+
+**Assessment**: Good real-time data; 60-second update frequency makes this the
+most granular VIC source for ongoing collection. The historical extract is a
+separate ask.
 
 ---
 
@@ -154,18 +184,31 @@ All Australian state government traffic APIs use **Creative Commons Attribution 
 |-------|--------|
 | **Portal** | https://qldtraffic.qld.gov.au/more/Developers-and-Data/ |
 | **API Base** | `https://api.qldtraffic.qld.gov.au/v2/` |
-| **Key Endpoint** | `https://api.qldtraffic.qld.gov.au/v2/events?apikey={KEY}` |
-| **Auth** | Public API key available (no signup), or register for dedicated key |
-| **Rate Limit** | 100 requests/min (public key, global limit) |
-| **License** | CC-BY 4.0 |
+| **Event endpoint** | `GET https://api.qldtraffic.qld.gov.au/v2/events?apikey={KEY}` |
+| **Past-hour endpoint** | `GET https://api.qldtraffic.qld.gov.au/v2/events/past-one-hour?apikey={KEY}` |
+| **Auth** | `apikey` as URL **query parameter** (not header). Public key published in the spec: `3e83add325cbb69ac4d8e5bf433d770b` (100 req/min global limit). Registered keys available on request |
+| **Registration** | Email `qldtraffic@tmr.qld.gov.au` with Organisation name, Contact person, Email, Application name |
+| **License** | **CC BY 4.0 Australia (CC BY 4.0 AU)** |
 | **Format** | GeoJSON (FeatureCollection) |
 | **Coverage** | All Queensland (Brisbane primary) |
 | **Cost** | Free |
-| **API Spec** | [PDF](https://qldtraffic.qld.gov.au/media/moreDevelopers-and-Data/qldtraffic-website-api-specification-v1-10.pdf) |
+| **API Spec** | v1.10 (19 Feb 2025) — [PDF](https://qldtraffic.qld.gov.au/media/moreDevelopers-and-Data/qldtraffic-website-api-specification-v1-10.pdf) |
 
-**Available Feeds**: Hazards, Crashes, Congestion, Flooding, Roadworks, Special Events, Web Cameras
+**`event_type` values**: Hazard, Crash, Congestion, Roadworks, Special event, Flooding.
+Additional data types: traffic web cameras (`/v1/webcams`), flood cameras (`/v1/floodcams`).
 
-**Assessment**: Excellent. Public API key means **instant access with zero signup**. Best source for quick testing.
+> The former "high risk crash zone" dataset referenced in older docs was
+> removed from the API — the v1.10 spec marks it struck-through as of v1.7
+> (24 April 2024).
+
+**`status` values returned**: only `Published` or `Reopened`. Archived
+events disappear from `/v2/events` immediately and appear on
+`/v2/events/past-one-hour` for at most 60 minutes before permanent removal.
+
+**Assessment**: Excellent for ongoing collection — the published public key
+means instant access with zero signup. Best source for quick testing and for
+the ongoing scraper. Historical backfill still requires a direct request to
+TMR (see §2.3 in `investigation-findings.md`).
 
 ---
 
@@ -508,14 +551,14 @@ Aligns with existing DataCruiser bucket structure:
 
 ### Week 1 — Urgent: Backfill & API Access (do this week)
 
-- [ ] **Register for TfNSW API key** — free, instant approval
-- [ ] **Email VicRoads** (`traffic_requests@vicroads.vic.gov.au`, subject: "API Token Request") — manual approval, may take days
-- [ ] **Test QLDTraffic public API key** — instant, no signup
+- [ ] **Register for TfNSW API key** — free, instant approval at opendata.transport.nsw.gov.au
+- [ ] **Register for Transport Victoria Open Data Portal account** at `opendata.transport.vic.gov.au` — self-serve, API key auto-generated
+- [ ] **Email DTP Victoria** at `PTdataprogram@transport.vic.gov.au` requesting a March 2026 historical extract — may take days
+- [ ] **Email TMR Queensland** at `qldtraffic@tmr.qld.gov.au` requesting a March 2026 historical extract (may be redirected to RTI, 30+ day SLA)
+- [ ] **Test QLDTraffic public API key** — the v1.10 spec publishes `apikey=3e83add325cbb69ac4d8e5bf433d770b` (100 req/min global) — no signup needed
 - [ ] **Register for TomTom API key** — free, instant
 - [ ] **Register for HERE API key** — free, instant
-- [ ] **Run TfNSW Historical API backfill** for March 2026 NSW data
-- [ ] **Test VicRoads and QLDTraffic** for closed/past incident retrieval
-- [ ] **Test VicEmergency and EmergencyAPI** for historical queries
+- [ ] **Run TfNSW Historical API backfill** for March 2026 NSW data (data ages out of the 3-month rolling window around June 2026)
 
 ### Week 2 — Validate & Supplement
 
@@ -547,9 +590,9 @@ Aligns with existing DataCruiser bucket structure:
 
 | Source | Cost | Notes |
 |--------|------|-------|
-| TfNSW | Free | CC-BY 4.0, best data |
-| VicRoads | Free | CC-BY 4.0, manual token request |
-| QLDTraffic | Free | CC-BY 4.0, instant public key |
+| TfNSW | Free | CC BY 4.0 International, best data |
+| DTP Victoria | Free | CC BY 4.0 International, self-serve key on opendata.transport.vic.gov.au |
+| QLDTraffic | Free | CC BY 4.0 **Australia**, published public key — zero signup |
 | VicEmergency | Free | No auth needed |
 | TomTom | Free | 2,500 req/day free tier |
 | HERE | Free | 1,000 req/day free tier |
@@ -611,8 +654,8 @@ These align with the CompassIoT spatial coverage areas from the Dataset Catalogu
 | Source | Method | How to Get |
 |--------|--------|-----------|
 | TfNSW | OAuth 2.0 (client_credentials) | Register at https://opendata.transport.nsw.gov.au/ |
-| VicRoads | `KeyID` header | Email traffic_requests@vicroads.vic.gov.au |
-| QLDTraffic | `apikey` query param | Public key available; or register at portal |
+| DTP Victoria | `Ocp-Apim-Subscription-Key` header (or `subscription-key` query param) | Create account at https://opendata.transport.vic.gov.au/ — key auto-generated |
+| QLDTraffic | `apikey` URL query param | Public key in spec (`3e83add325cbb69ac4d8e5bf433d770b`) or email qldtraffic@tmr.qld.gov.au to register |
 | VicEmergency | None | Open access |
 | TomTom | `key` query param | Register at https://developer.tomtom.com/ |
 | HERE | `apiKey` query param | Register at https://developer.here.com/ |

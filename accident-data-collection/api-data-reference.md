@@ -127,8 +127,15 @@ The Historical API uses the same incident schema as the live API but supports da
 
 ## 3. QLDTraffic API — Response Format
 
+> Cross-checked against the official [QLDTraffic API specification v1.10
+> (19 Feb 2025)](https://qldtraffic.qld.gov.au/media/moreDevelopers-and-Data/qldtraffic-website-api-specification-v1-10.pdf).
+
 **Endpoint**: `GET https://api.qldtraffic.qld.gov.au/v2/events?apikey={KEY}`
-**Auth**: API key as query parameter
+**Auth**: API key as URL **query parameter** `apikey` (not a header). Public
+key published in the spec: `apikey=3e83add325cbb69ac4d8e5bf433d770b`
+(100 requests/minute **global** limit). Invalid keys return HTTP 403; keys
+over their quota return HTTP 429.
+**License**: CC BY 4.0 Australia (CC BY 4.0 AU) — note the Australia variant.
 **Format**: GeoJSON FeatureCollection
 
 ### Sample Event Feature
@@ -137,106 +144,176 @@ The Historical API uses the same incident schema as the live API but supports da
 {
   "type": "Feature",
   "geometry": {
-    "type": "Point",
-    "coordinates": [153.0235, -27.4698]
+    "type": "GeometryCollection",
+    "geometries": [
+      {"type": "LineString", "coordinates": [[153.0259, -27.3400], [153.0260, -27.3402]]}
+    ]
   },
   "properties": {
+    "id": 155,
+    "status": "Published",
+    "published": "2026-03-15T08:30:00+10:00",
+    "source": {
+      "source_name": "EPS",
+      "source_id": null,
+      "account": null,
+      "provided_by": null,
+      "provided_by_url": "Department of Transport and Main Roads"
+    },
+    "url": "http://api.qldtraffic.qld.gov.au/v1/events/155",
     "event_type": "Crash",
     "event_subtype": "Multi-vehicle",
-    "status": "Published",
-    "severity": "Major",
+    "event_due_to": "N/A",
     "impact": {
       "direction": "Northbound",
-      "lanes_affected": 2,
-      "delays": "Significant delays expected"
-    },
-    "description": "Multi-vehicle crash, Bruce Hwy northbound at Caboolture",
-    "road": {
-      "road_name": "Bruce Highway",
-      "locality": "Caboolture",
-      "district": "Metropolitan",
-      "road_class": "National Highway"
+      "towards": "Caboolture",
+      "impact_type": "Lanes blocked",
+      "impact_subtype": "Two lanes blocked",
+      "delay": "Long delays expected"
     },
     "duration": {
-      "start": "2026-04-16T07:30:00+10:00",
+      "start": "2026-03-15T08:30:00+10:00",
       "end": null,
-      "expected_end": "2026-04-16T10:00:00+10:00"
+      "active_days": [],
+      "recurrences": []
     },
-    "source": "TMR",
-    "last_updated": "2026-04-16T08:15:00+10:00",
-    "url": "https://qldtraffic.qld.gov.au/incident/..."
+    "event_priority": "High",
+    "description": "Crash on Bruce Hwy, northbound, Caboolture",
+    "advice": "Use alternative route",
+    "information": null,
+    "road_summary": {
+      "road_name": "Bruce Highway",
+      "locality": "Caboolture",
+      "postcode": "4510",
+      "local_government_area": "MORETON BAY",
+      "district": "Metropolitan"
+    },
+    "last_updated": "2026-03-15T08:45:00+10:00",
+    "next_inspection": null,
+    "web_link": "https://qldtraffic.qld.gov.au/",
+    "area_alert": false,
+    "alert_message": null
   }
 }
 ```
 
-### Event Types
+### `event_type` values
 
-| event_type | Description |
-|-----------|-------------|
-| `Crash` | Vehicle crashes |
-| `Hazard` | Road hazards |
-| `Congestion` | Traffic congestion |
-| `Flooding` | Road flooding |
-| `Roadwork` | Roadworks |
-| `Special Event` | Events affecting traffic |
+Exactly one of: `Hazard`, `Crash`, `Congestion`, `Roadworks`, `Special event`,
+`Flooding`. `event_subtype` is a second categorical axis (e.g. `Multi-vehicle`,
+`Debris on road`, `Flash flooding`) and `event_due_to` a third (e.g. `Fog`,
+`Heavy rain`, `Spill`).
 
-### Endpoints
+### `status` values
+
+Only `Published` or `Reopened`. There is no `Archived` value in the active
+endpoint's response — archived events leave `/v2/events` and appear instead
+in `/v2/events/past-one-hour` for ≤ 60 minutes.
+
+### Endpoints (per spec §5)
 
 | Endpoint | Returns |
 |----------|---------|
-| `/v2/events` | All currently active (Published) events |
-| `/v2/events/past-one-hour` | Events archived/updated in last 60 minutes |
+| `https://api.qldtraffic.qld.gov.au/v1/` | Historical-format path for pre-v2 clients (no area alerts) |
+| `https://api.qldtraffic.qld.gov.au/v2/events` | All currently active (`Published` / `Reopened`) events |
+| `https://api.qldtraffic.qld.gov.au/v2/events/past-one-hour` | Events created/updated/archived/reopened in the past 60 minutes of system time |
+| `https://api.qldtraffic.qld.gov.au/v1/webcams` | Traffic web camera metadata + image URLs |
+| `https://api.qldtraffic.qld.gov.au/v1/floodcams` | Flood camera metadata + image URLs |
 
-**Critical limitation**: No date parameters. No status filter. `/v2/events` returns only active events. Closed events are purged from `/v2/events` immediately and appear in `/v2/events/past-one-hour` for only 60 minutes before permanent deletion.
+The former `/v1/highriskcrashzones` product was **removed** from the API (see
+spec v1.7, 24 Apr 2024 — the corresponding section is struck through in v1.10).
+
+**Critical limitation**: no date parameters, no status filter. `/v2/events`
+returns only currently active events. Closed/archived events are purged from
+`/v2/events` and appear in `/v2/events/past-one-hour` for at most 60 minutes
+before permanent removal.
 
 ---
 
-## 4. VicRoads Unplanned Disruptions API — Response Format
+## 4. DTP Victoria Unplanned Disruptions API — Response Format
+
+> **Audit correction (20 Apr 2026)**: legacy VicRoads platforms were
+> decommissioned 30 September 2025. Use the Transport Victoria Open Data
+> Portal and the `Ocp-Apim-Subscription-Key` header (auto-generated when you
+> sign up for an account at `opendata.transport.vic.gov.au`). The auth-header
+> name `KeyID` previously documented here is obsolete. Fields below were
+> cross-checked against the current `unplanned_road_disruptions.openapi.json`.
 
 **Endpoint**: `GET https://api.opendata.transport.vic.gov.au/opendata/roads/disruptions/unplanned/v2`
-**Auth**: `KeyID: YOUR_TOKEN` header
-**Format**: JSON (GeoJSON-like)
+**Auth**: `Ocp-Apim-Subscription-Key: YOUR_KEY` header (or `subscription-key` query param)
+**Format**: GeoJSON FeatureCollection
+**Rate limit**: 10 calls/minute
 
-### Sample Disruption Record
+### Sample Disruption Feature
 
 ```json
 {
-  "id": "DIS-2026-04-001234",
-  "type": "Incident",
-  "status": "Active",
-  "severity": "Major",
-  "created": "2026-04-16T08:00:00+10:00",
-  "lastUpdated": "2026-04-16T08:30:00+10:00",
-  "lastActive": "2026-04-16T08:30:00+10:00",
-  "lastClosed": null,
-  "location": {
+  "type": "Feature",
+  "geometry": {
     "type": "Point",
     "coordinates": [144.9631, -37.8136]
   },
-  "road": "Monash Freeway",
-  "suburb": "South Yarra",
-  "direction": "Outbound",
-  "description": "Multi-vehicle collision - emergency services on scene",
-  "impact": {
-    "lanes_closed": 2,
-    "total_lanes": 4,
-    "detour_available": true
-  },
-  "tow_allocation": {
-    "allocated": true,
-    "eta_minutes": 15
+  "properties": {
+    "id": "DIS-2026-04-001234",
+    "impactId": "IMP-2026-04-001234-01",
+    "status": "Active",
+    "eventType": "Incident",
+    "eventSubType": "Multi-vehicle collision",
+    "eventId": "EVT-2026-04-001234",
+    "description": "Multi-vehicle collision — emergency services on scene",
+    "closedRoadName": "Monash Freeway",
+    "declaredRoadName": "M1",
+    "melway": "58 F7",
+    "socialMedia": null,
+    "roadAccessType": "Restricted",
+    "eventLocationStatus": "On-road",
+    "numberLanesImpacted": "2",
+    "created": "2026-04-16T08:00:00+10:00",
+    "lastUpdated": "2026-04-16T08:30:00+10:00",
+    "lastActive": "2026-04-16T08:30:00+10:00",
+    "lastClosed": null,
+    "vcsd": null,
+    "weblinkURL": null,
+    "reference": {
+      "localRoadName": "Monash Freeway",
+      "roadAuthority": "DTP",
+      "declaredRoadNumber": "M1",
+      "startIntersectionRoadName": "Toorak Rd",
+      "startIntersectionLocality": "South Yarra",
+      "endIntersectionRoadName": "Burke Rd",
+      "endIntersectionLocality": "Camberwell",
+      "localGovernmentArea": "Stonnington",
+      "srns": null,
+      "closedRoadSESRegion": "Southern Metro",
+      "closedRoadTransportRegion": "Metro",
+      "rmaClass": "Freeway",
+      "closedRoadBusRoute": "605",
+      "closedRoadTramRoute": null
+    },
+    "source": {
+      "sourceName": "VicRoads RCIS",
+      "sourceId": "RCIS-12345"
+    },
+    "impact": {
+      "direction": "Outbound",
+      "impactType": "Lane closure"
+    }
   }
 }
 ```
 
+**Top-level response**: a GeoJSON `FeatureCollection` with `type`, `features`,
+`meta` (`total_records`, `page`, `limit`, `count`), and `links[]`
+(pagination). Each feature uses the shape above.
+
 ### Query Parameters (v2 API)
 
-| Parameter | Type | Notes |
-|-----------|------|-------|
-| `page` | 1-9 | Pagination |
-| `limit` | 0-500 | Results per page |
+| Parameter | Default | Allowed values |
+|-----------|---------|----------------|
+| `page` | 1 | 1–9 |
+| `limit` | 0 | 0, 100, 200, 300, 400, 500 |
 
-**That's it.** No date, status, or location filters. Returns only current active set.
+**That's it.** No date, status, or location filters. Returns only the current active set.
 
 ---
 

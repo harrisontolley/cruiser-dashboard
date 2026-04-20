@@ -17,15 +17,25 @@ There are nuances around Australian copyright law (no TDM exception), but these 
 
 | Source | Licence | Commercial AI Training? | API ToS Restrictions on AI? | Verdict |
 |--------|---------|------------------------|----------------------------|---------|
-| **TfNSW** | CC-BY 4.0 | **Permitted** | None found | **GO** |
-| **VicRoads** | CC-BY 4.0 | **Permitted** | None found | **GO** |
-| **QLDTraffic** | CC-BY 4.0 | **Permitted** | None found | **GO** |
+| **TfNSW** | CC BY 4.0 International | **Permitted** | None found | **GO** |
+| **DTP Victoria** (ex-VicRoads) | CC BY 4.0 International | **Permitted** | None found | **GO** |
+| **QLDTraffic** | CC BY 4.0 Australia ("AU")* | **Permitted** | None found | **GO** |
 | **TomTom** | Proprietary (free tier) | **Check ToS** | Likely restricted | **CAUTION** |
 | **HERE** | Proprietary (free tier) | **Check ToS** | Likely restricted | **CAUTION** |
 | **jxeeno GitHub archive** | Derived from CC-BY 4.0 TfNSW data | **Permitted** (same as TfNSW) | N/A | **GO** |
 | **Mendeley Sydney GMA dataset** | CC-BY 4.0 | **Permitted** | N/A | **GO** |
 
-**Recommendation**: Stick to the government CC-BY 4.0 sources for training data. Avoid TomTom/HERE data in the training set unless their commercial terms explicitly permit AI training — their free-tier ToS likely do not.
+\* The QLDTraffic API specification v1.10 (19 Feb 2025) stamps the license as
+"Creative Commons Attribution 4.0 Australia" with URL
+`creativecommons.org/licenses/by/4.0/au/`. CC BY 4.0 is jurisdiction-neutral
+by design (CC moved away from localised ports after CC 3.0), and the `/au/`
+URL redirects to the international 4.0 terms. The substantive permissions
+— share, adapt, commercial use, AI training — are identical. The only
+practical difference is the attribution string, which should cite the State
+of Queensland (Department of Transport and Main Roads) rather than a
+global CC BY attribution.
+
+**Recommendation**: Stick to the government CC BY 4.0 sources for training data. Avoid TomTom/HERE data in the training set unless their commercial terms explicitly permit AI training — their free-tier ToS likely do not.
 
 ---
 

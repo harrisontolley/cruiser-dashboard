@@ -1,6 +1,12 @@
 # Investigation Findings: March 2026 Data Recoverability
 
 > **Investigated**: 16 April 2026
+> **Re-audited**: 20 April 2026 — VIC findings updated below after confirming
+> that the legacy VicRoads `api.vicroads.vic.gov.au` endpoint and Data Exchange
+> Platform were decommissioned on 30 September 2025. All VIC transport APIs
+> now live on the Transport Victoria Open Data Portal
+> (`opendata.transport.vic.gov.au`). See the **Audit Corrections** block in
+> §3 below.
 > **Status**: All open questions from the data collection plan have been resolved
 
 ---
@@ -141,17 +147,39 @@ The QLDTraffic API (v1.10, dated 19 Feb 2025) has exactly **two event endpoints*
 
 ---
 
-## 3. Victoria — VicRoads / Department of Transport and Planning
+## 3. Victoria — Department of Transport and Planning (DTP)
 
 ### Verdict: NOT RECOVERABLE from public APIs (until ~October 2026 via CrashStats)
 
+> **Audit Corrections (20 Apr 2026)** — the original write-up below referred
+> to the old VicRoads platforms. Updated facts:
+> - **`api.vicroads.vic.gov.au` and `data-exchange.vicroads.vic.gov.au` were
+>   both decommissioned on 30 September 2025.** Users were migrated to the
+>   Transport Victoria Open Data Portal (`opendata.transport.vic.gov.au`).
+> - The previous API-token email `traffic_requests@vicroads.vic.gov.au` no
+>   longer serves this purpose. Current API-key registration is **self-serve**
+>   through the Portal (account creation → key auto-generated).
+> - The data-request email for historical extracts is now
+>   `PTdataprogram@transport.vic.gov.au` (the DTP Open Data / Transport Data
+>   Program team that handled the migration).
+> - The v2 API lives at
+>   `https://api.opendata.transport.vic.gov.au/opendata/roads/disruptions/unplanned/v2`
+>   with auth header `Ocp-Apim-Subscription-Key` (not `KeyID`).
+> - Rate limit is **10 calls/minute** (previously documented as 20/60sec under
+>   the old DEP).
+> - The queryable-parameter conclusion still holds: only `page` (1–9) and
+>   `limit` (0, 100, 200, 300, 400, 500) — no date/status/area filter.
+
 ### API Investigation
 
-The VicRoads Unplanned Disruptions v2 API has only two query parameters: `page` (1-9) and `limit` (0-500). **No date range, time, or status filter parameters exist.** The API is described as "near real-time" — it returns only the current active incident set.
+The Unplanned Disruptions v2 API has only two query parameters: `page` (1–9)
+and `limit` (0, 100, 200, 300, 400, 500). **No date range, time, or status
+filter parameters exist.** The API is described as "near real-time" — it
+returns only the current active incident set.
 
-Each record includes `created`, `lastUpdated`, `lastClosed`, `status` fields, but there is no way to query by date or request past incidents.
-
-**The v1 documentation PDF** is now access-denied (`PublicAccessNotPermitted`).
+Each record includes `created`, `lastUpdated`, `lastActive`, `lastClosed`,
+`status`, `eventType`, `eventSubType`, `eventId` fields, but there is no way
+to query by date or request past incidents.
 
 ### VicEmergency Feed
 
@@ -171,10 +199,9 @@ The feed at `data.emergency.vic.gov.au` does retain some incidents — today's d
 
 ### Recovery options
 
-1. **Email VicRoads for API token** — even though March data is gone, set up for future collection. See [email draft](./vicroads-email-draft.md).
-2. **Contact VicRoads/DTP directly** — request a historical data extract for March 2026 Melbourne-area unplanned disruptions
-3. **Wait for CrashStats** — the Victoria Road Crash Data dataset will include March 2026 police-reported crashes around October 2026 (7-month lag). This covers crashes only, not breakdowns/hazards.
-4. **Intelematics** — as a Melbourne-based company, they likely have the most complete Melbourne incident archive. Contact for pricing.
+1. **Register on the Transport Victoria Open Data Portal** (`opendata.transport.vic.gov.au`) — self-serve API key for ongoing collection
+2. **Email DTP Victoria** at `PTdataprogram@transport.vic.gov.au` to request a historical extract for 1 March – 1 April 2026 Melbourne-area unplanned disruptions3. **Wait for CrashStats** — the Victoria Road Crash Data dataset will include March 2026 police-reported crashes around October 2026 (7-month lag). Covers crashes only, not breakdowns/hazards.
+4. **Intelematics** — Melbourne-based, archives 200K+ incidents across all three metros; best commercial fallback if the DTP request fails.
 
 ---
 
@@ -226,8 +253,8 @@ The feed at `data.emergency.vic.gov.au` does retain some incidents — today's d
 
 1. **Register for TfNSW API key** and run the Historical Traffic API query for March 2026. This is the single most valuable action.
 2. **Clone jxeeno/nsw-livetraffic-historical** `data` branch as backup for NSW
-3. **Send VicRoads email** — request API token AND ask about historical March 2026 data extract (see [email draft](./vicroads-email-draft.md))
-4. **Email TMR Queensland** (qldtraffic@tmr.qld.gov.au) — request March 2026 Brisbane incident data extract
+3. **Register on Transport Victoria Open Data Portal** (`opendata.transport.vic.gov.au`) for a VIC API key (self-serve, auto-generated)
+4. **Email DTP Victoria** at `PTdataprogram@transport.vic.gov.au` requesting the March 2026 historical extract5. **Email TMR Queensland** (`qldtraffic@tmr.qld.gov.au`) — request March 2026 Brisbane incident data extract
 
 ### Do This Month
 
