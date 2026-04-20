@@ -8,7 +8,7 @@
 #
 # Usage (on EC2, inside tmux so disconnects don't kill it):
 #   tmux new -s rerun
-#   cd ~/cruiser-dashboard
+#   cd ~/cruiser-dashboard/overture-pipeline
 #   chmod +x rerun-all-cities.sh
 #   ./rerun-all-cities.sh
 #   # Ctrl-b then d to detach; `tmux attach -t rerun` to reattach

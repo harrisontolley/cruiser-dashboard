@@ -11,7 +11,12 @@ import {
 import { CATEGORY_COLORS, GrowthEntry } from "@/lib/data/types";
 import { formatBytes } from "@/lib/utils";
 
-const CustomTooltip = ({ active, payload }: any) => {
+type TooltipProps = {
+  active?: boolean;
+  payload?: { payload: GrowthEntry }[];
+};
+
+const CustomTooltip = ({ active, payload }: TooltipProps) => {
   if (!active || !payload?.length) return null;
   const data = payload[0].payload;
   if (!data.datasetName) return null;
@@ -34,9 +39,14 @@ const CustomTooltip = ({ active, payload }: any) => {
   );
 };
 
-const CustomDot = (props: any) => {
-  const { cx, cy, payload } = props;
-  if (!payload.datasetName) return null;
+type CustomDotProps = {
+  cx?: number;
+  cy?: number;
+  payload?: GrowthEntry;
+};
+
+const CustomDot = ({ cx, cy, payload }: CustomDotProps) => {
+  if (!payload?.datasetName) return null;
 
   const color =
     CATEGORY_COLORS[payload.category as keyof typeof CATEGORY_COLORS] ??

@@ -21,7 +21,12 @@ const REGION_COLORS = [
   "oklch(0.70 0.12 30)",
 ];
 
-const CustomTooltip = ({ active, payload }: any) => {
+type TooltipProps = {
+  active?: boolean;
+  payload?: { payload: RegionStatEntry }[];
+};
+
+const CustomTooltip = ({ active, payload }: TooltipProps) => {
   if (!active || !payload?.length) return null;
   const data = payload[0].payload;
   return (

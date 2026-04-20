@@ -8,7 +8,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Cell,
   Legend,
 } from "recharts";
 import { Dataset } from "@/lib/data/types";
@@ -34,28 +33,41 @@ interface DatasetPair {
 // Custom Tooltip (matches existing chart styling)
 // ---------------------------------------------------------------------------
 
-function ChartTooltip({ active, payload, label }: any) {
+type TooltipPayloadEntry = {
+  dataKey?: string | number;
+  name?: string;
+  value?: number;
+  fill?: string;
+};
+
+type ChartTooltipProps = {
+  active?: boolean;
+  payload?: TooltipPayloadEntry[];
+  label?: string | number;
+};
+
+function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg ring-1 ring-white/[0.08] bg-[oklch(0.16_0.008_265)] px-3.5 py-2.5 shadow-2xl shadow-black/40">
       <p className="mb-1 text-xs font-medium text-foreground">{label}</p>
-      {payload.map((p: any) => (
+      {payload.map((p) => (
         <p key={p.dataKey} className="font-mono text-[11px]" style={{ color: p.fill }}>
-          {p.name}: {formatBytes(p.value)}
+          {p.name}: {formatBytes(p.value ?? 0)}
         </p>
       ))}
     </div>
   );
 }
 
-function FileCountTooltip({ active, payload, label }: any) {
+function FileCountTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg ring-1 ring-white/[0.08] bg-[oklch(0.16_0.008_265)] px-3.5 py-2.5 shadow-2xl shadow-black/40">
       <p className="mb-1 text-xs font-medium text-foreground">{label}</p>
-      {payload.map((p: any) => (
+      {payload.map((p) => (
         <p key={p.dataKey} className="font-mono text-[11px]" style={{ color: p.fill }}>
-          {p.name}: {p.value.toLocaleString()} files
+          {p.name}: {(p.value ?? 0).toLocaleString()} files
         </p>
       ))}
     </div>
@@ -207,17 +219,16 @@ function CompressionIndicators({ pairs }: { pairs: DatasetPair[] }) {
   );
 }
 
-function FormatBreakdown({ datasets }: { datasets: Dataset[] }) {
-  const rawFormats = new Map<string, number>();
-  const procFormats = new Map<string, number>();
-
-  for (const d of datasets) {
-    const fmt = d.format ?? "Unknown";
-    const map = d.stage === "raw" ? rawFormats : procFormats;
-    map.set(fmt, (map.get(fmt) ?? 0) + 1);
-  }
-
-  const FormatList = ({ title, formats, color }: { title: string; formats: Map<string, number>; color: string }) => (
+function FormatList({
+  title,
+  formats,
+  color,
+}: {
+  title: string;
+  formats: Map<string, number>;
+  color: string;
+}) {
+  return (
     <div>
       <div className="text-xs font-medium text-muted-foreground uppercase tracking-[0.12em] mb-2.5">
         {title}
@@ -242,6 +253,17 @@ function FormatBreakdown({ datasets }: { datasets: Dataset[] }) {
       </div>
     </div>
   );
+}
+
+function FormatBreakdown({ datasets }: { datasets: Dataset[] }) {
+  const rawFormats = new Map<string, number>();
+  const procFormats = new Map<string, number>();
+
+  for (const d of datasets) {
+    const fmt = d.format ?? "Unknown";
+    const map = d.stage === "raw" ? rawFormats : procFormats;
+    map.set(fmt, (map.get(fmt) ?? 0) + 1);
+  }
 
   return (
     <div className="rounded-xl ring-1 ring-white/[0.06] bg-card/50 p-5">

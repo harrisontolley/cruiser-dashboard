@@ -49,30 +49,37 @@ export function CommandPalette({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { copy } = useCopyToClipboard();
 
+  const closePalette = () => {
+    setOpen(false);
+    setSearch("");
+  };
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen(!open);
+        if (open) {
+          closePalette();
+        } else {
+          setOpen(true);
+        }
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
+    // closePalette is stable enough for this handler; re-subscribing on every render is unnecessary
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, setOpen]);
-
-  useEffect(() => {
-    if (!open) setSearch("");
-  }, [open]);
 
   const handleSelectDataset = (dataset: Dataset) => {
     onDatasetSelect(dataset);
-    setOpen(false);
+    closePalette();
   };
 
   const handleSectionJump = (sectionId: string) => {
     const el = document.getElementById(sectionId);
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setOpen(false);
+    closePalette();
   };
 
   const handleCopyS3 = async (dataset: Dataset) => {
@@ -87,7 +94,7 @@ export function CommandPalette({
   return (
     <div
       className="fixed inset-0 z-[100] flex items-start justify-center px-4 pt-[14vh] bg-black/60 backdrop-blur-md"
-      onClick={() => setOpen(false)}
+      onClick={closePalette}
     >
       <Command
         onClick={(e) => e.stopPropagation()}
@@ -204,7 +211,7 @@ export function CommandPalette({
               value="toggle-theme"
               onSelect={() => {
                 setTheme(theme === "dark" ? "light" : "dark");
-                setOpen(false);
+                closePalette();
               }}
               className="flex items-center gap-3 rounded-md px-3 py-2 text-sm cursor-pointer aria-selected:bg-white/[0.05] transition-colors"
             >

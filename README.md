@@ -1,36 +1,22 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# cruiser-dashboard
 
-## Getting Started
+Monorepo for the DataCruiser project — a Next.js data-catalogue dashboard backed by S3,
+plus the data pipelines that populate it.
 
-First, run the development server:
+## Layout
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+| Folder | What's in it |
+|--------|--------------|
+| [`dashboard/`](./dashboard) | Next.js 16 dashboard (App Router, Tailwind v4, shadcn). `cd dashboard && npm install && npm run dev`. |
+| [`overture-pipeline/`](./overture-pipeline) | Python pipeline that extracts Overture Maps layers for a city and uploads the outputs to S3. `cd overture-pipeline && ./run-pipeline.sh sydney 5750005 --hex-agg`. |
+| [`accident-data-collection/`](./accident-data-collection) | Research + plans for acquiring Australian traffic events / incidents / breakdowns data to overlay on CompassIoT trajectories. Currently markdown only — see its [README](./accident-data-collection/README.md). |
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Per-folder workflows
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Each subfolder is self-contained. Open a terminal in the folder you're working in —
+commands, dependencies, and virtualenvs are all scoped locally.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Dashboard dev loop**: `cd dashboard && npm run dev` → http://localhost:3000
+- **Dashboard metadata refresh** (after uploading a new dataset to S3): `cd dashboard && npm run scrape`
+- **Overture pipeline (fresh machine)**: `cd overture-pipeline && ./ec2-setup.sh` then `./run-pipeline.sh <city> <relation-id>`
+- **Accident data collection**: `accident-data-collection/README.md` has the current plan and action items.

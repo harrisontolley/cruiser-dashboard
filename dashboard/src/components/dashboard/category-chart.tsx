@@ -12,7 +12,12 @@ import {
 import { CategoryStatEntry } from "@/lib/data/types";
 import { formatBytes } from "@/lib/utils";
 
-const CustomTooltip = ({ active, payload }: any) => {
+type TooltipProps = {
+  active?: boolean;
+  payload?: { payload: CategoryStatEntry }[];
+};
+
+const CustomTooltip = ({ active, payload }: TooltipProps) => {
   if (!active || !payload?.length) return null;
   const data = payload[0].payload;
   return (
