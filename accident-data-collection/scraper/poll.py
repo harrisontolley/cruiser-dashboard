@@ -28,6 +28,9 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import requests
 from dateutil import parser as dtparser
+from dateutil import tz as dttz
+
+_MEL_TZ = dttz.gettz("Australia/Melbourne")
 
 # =============================================================================
 # Config
@@ -329,14 +332,19 @@ def epoch_ms_to_utc(ms: Any) -> datetime | None:
         return None
 
 
-def parse_iso(s: Any) -> datetime | None:
-    """QLD/VIC return ISO 8601 strings (usually with +10:00 / +11:00 offset)."""
+def parse_iso(s: Any, tz_fallback=timezone.utc) -> datetime | None:
+    """Parse an ISO 8601 string to a tz-aware UTC datetime.
+
+    tz_fallback: timezone to assume when the string has no offset. QLD returns
+    offset-aware strings so the default (UTC) is fine. DTP Vic returns naive
+    local Melbourne time — pass _MEL_TZ for those calls.
+    """
     if not s or not isinstance(s, str):
         return None
     try:
         dt = dtparser.isoparse(s)
         if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
+            dt = dt.replace(tzinfo=tz_fallback)
         return dt.astimezone(timezone.utc)
     except (ValueError, TypeError):
         return None
@@ -566,16 +574,17 @@ def fetch_dtpvic(fetched_at: datetime) -> tuple[dict, list[NormalizedIncident]]:
     for page in range(1, 10):
         params = {"page": page, "limit": 500}
 
-        # The OpenAPI spec says Ocp-Apim-Subscription-Key; the dataset page says
-        # KeyID. Try the spec-documented one first, fall back to KeyID.
-        r = http_get(
-            base,
-            headers={"Ocp-Apim-Subscription-Key": DTPVIC_API_KEY},
-            params=params,
-        )
+        # Empirically KeyID works; Ocp-Apim-Subscription-Key returns 401 for
+        # keys generated via the portal. Try KeyID first, fall back to the
+        # spec-documented header.
+        r = http_get(base, headers={"KeyID": DTPVIC_API_KEY}, params=params)
         if r.status_code in (401, 403):
-            log.info("vic_retry_keyid_header", extra={"status": r.status_code})
-            r = http_get(base, headers={"KeyID": DTPVIC_API_KEY}, params=params)
+            log.info("vic_retry_subscription_key_header", extra={"status": r.status_code})
+            r = http_get(
+                base,
+                headers={"Ocp-Apim-Subscription-Key": DTPVIC_API_KEY},
+                params=params,
+            )
         if r.status_code != 200:
             log.warning("vic_non_200", extra={"status": r.status_code, "page": page, "body": r.text[:500]})
             break
@@ -638,14 +647,14 @@ def fetch_dtpvic(fetched_at: datetime) -> tuple[dict, list[NormalizedIncident]]:
             region=safe_str(reference.get("closedRoadTransportRegion")),
             description=safe_str(p.get("description")),
             headline=None,
-            start_time=parse_iso(p.get("created")),
-            end_time=parse_iso(p.get("lastClosed")),
+            start_time=parse_iso(p.get("created"), tz_fallback=_MEL_TZ),
+            end_time=parse_iso(p.get("lastClosed"), tz_fallback=_MEL_TZ),
             ended=bool(p.get("lastClosed")),
-            last_updated=parse_iso(p.get("lastUpdated") or p.get("lastActive")),
+            last_updated=parse_iso(p.get("lastUpdated") or p.get("lastActive"), tz_fallback=_MEL_TZ),
             lanes_affected=safe_int(p.get("numberLanesImpacted")),
             direction=safe_str(impact.get("direction")),
             attending_groups=None,
-            source_url=safe_str(p.get("weblinkURL") or p.get("socialMedia")),
+            source_url=safe_str(p.get("weblinkURL")),  # socialMedia is text, not a URL
             collected_at=fetched_at,
             raw_payload=json.dumps(feat, separators=(",", ":"), ensure_ascii=False),
         ))
