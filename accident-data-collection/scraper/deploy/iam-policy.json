@@ -1,0 +1,33 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "WriteTrafficIncidentSnapshots",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:PutObjectAcl"
+      ],
+      "Resource": [
+        "arn:aws:s3:::datacruiser-stdb/raw/traffic-incidents/*",
+        "arn:aws:s3:::datacruiser-stdb/processed/traffic-incidents/*"
+      ]
+    },
+    {
+      "Sid": "ListBucketForPrefix",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": "arn:aws:s3:::datacruiser-stdb",
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": [
+            "raw/traffic-incidents/*",
+            "processed/traffic-incidents/*"
+          ]
+        }
+      }
+    }
+  ]
+}

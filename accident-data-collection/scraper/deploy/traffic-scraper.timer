@@ -1,0 +1,15 @@
+[Unit]
+Description=Run traffic-scraper every 5 minutes
+
+[Timer]
+# Fire at :00, :05, :10, … every hour, with up to 30 seconds of random
+# jitter so we're not hammering the APIs on the exact minute with everyone
+# else.
+OnCalendar=*:0/5
+RandomizedDelaySec=30
+# If the host was off when a firing was scheduled, run it as soon as we boot
+Persistent=true
+Unit=traffic-scraper.service
+
+[Install]
+WantedBy=timers.target

@@ -16,6 +16,7 @@ data.
 | [investigation-findings.md](./investigation-findings.md) | API investigation results — what's recoverable for March 2026 and what's not |
 | [api-data-reference.md](./api-data-reference.md) | Actual data formats, sample payloads, and field descriptions for each API |
 | [licensing-analysis.md](./licensing-analysis.md) | Legal analysis — CC BY 4.0 permits commercial AI training, per-source verdict |
+| [scraper/](./scraper) | Production scraper — polls all 3 sources every 5 min, writes raw + normalized Parquet to S3. Deploys to EC2 via systemd. See `scraper/README.md`. |
 
 ## Key Findings
 

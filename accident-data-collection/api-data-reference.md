@@ -6,98 +6,200 @@
 
 ## 1. TfNSW Live Hazards API — Response Format
 
-**Endpoint**: `GET https://api.transport.nsw.gov.au/v1/live/hazards/incident/all`
-**Auth**: `Authorization: apikey YOUR_KEY`
-**Format**: GeoJSON FeatureCollection
+> **Verified 20 April 2026** against the live response captured in the
+> jxeeno archive
+> ([`raw.githubusercontent.com/jxeeno/nsw-livetraffic-historical/data/data/incident.geojson`](https://raw.githubusercontent.com/jxeeno/nsw-livetraffic-historical/data/data/incident.geojson)),
+> which commits the exact bytes returned by this endpoint every 15 minutes.
+> The previous version of this section was synthesised from narrative docs
+> and contained several wrong field names and types — it has been replaced.
+> Cross-checked against the TfNSW Swagger definition listing this endpoint
+> as `AllTrafficIncidents` with content-type `application/vnd.geo+json`.
 
-### Sample Incident Feature
+**Endpoint**: `GET https://api.transport.nsw.gov.au/v1/live/hazards/incident/all`
+**Auth**: `Authorization: apikey YOUR_KEY` (header)
+**Format**: GeoJSON FeatureCollection (`application/vnd.geo+json`)
+**Schema applies to**: sibling endpoints `/roadwork/all`, `/fire/all`,
+`/flood/all`, `/alpine/all`, `/majorevent/all` all return the same Feature
+shape with different `mainCategory` values. The `/incident/all` endpoint
+includes **both planned and unplanned** items — filter client-side on
+`incidentKind` (see Behavioural quirks below).
+
+### Sample Feature (real response, incident id 212927, Mamre Road)
 
 ```json
 {
   "type": "Feature",
-  "id": 1234567,
+  "id": 212927,
   "geometry": {
     "type": "Point",
-    "coordinates": [151.2093, -33.8688]
+    "coordinates": [150.7698515, -33.7913423],
+    "collections": []
   },
   "properties": {
-    "mainCategory": "CRASH",
-    "created": "2026-03-15T08:30:00+11:00",
-    "lastUpdated": "2026-03-15T09:15:00+11:00",
-    "ended": "2026-03-15T10:45:00+11:00",
-    "isMajor": false,
-    "isEnded": true,
-    "isNew": false,
-    "isImpactNetwork": true,
-    "displayName": "Crash on Parramatta Rd at Burwood",
-    "headline": "CRASH - Parramatta Rd, Burwood",
-    "roads": [
+    "webLinks": [
       {
-        "region": "SYD_MET",
-        "suburb": "Burwood",
-        "mainStreet": "Parramatta Road",
-        "crossStreet": "Burwood Road",
-        "locationQualifier": "at",
-        "conditionTendency": "deteriorating",
-        "conditionDirection": "both",
-        "impactedLanes": [
-          {
-            "affectedDirection": "Both directions",
-            "closedLanes": "1 of 3 lanes closed",
-            "description": "Use caution"
-          }
-        ]
+        "linkText": "Mamre Road upgrade",
+        "linkURL": "https://www.transport.nsw.gov.au/projects/current-projects/mamre-road-upgrade-between-m4-motorway-st-clair-and-erskine-park-road"
       }
     ],
-    "publicTransport": {
-      "affectedBusRoutes": ["461", "480"],
-      "affectedTrainLines": []
-    },
-    "adviceA": "Exercise caution",
-    "adviceB": "Allow extra travel time",
-    "otherAdvice": "Emergency services on scene",
-    "incidentKind": "Collision",
-    "subCategoryA": "Multi-vehicle",
-    "subCategoryB": "2 vehicles",
-    "duration": "02h 15m",
-    "start": "2026-03-15T08:30:00+11:00",
-    "end": "2026-03-15T10:45:00+11:00",
+    "headline": "",
     "periods": [],
-    "attendingGroups": ["NSW Police", "Fire & Rescue"],
-    "media": null,
-    "weblinkUrl": "https://www.livetraffic.com/incident/1234567"
+    "speedLimit": -1,
+    "weblinkUrl": null,
+    "expectedDelay": -1,
+    "ended": false,
+    "isNewIncident": false,
+    "publicTransport": "",
+    "impactingNetwork": true,
+    "subCategoryB": null,
+    "arrangementAttachments": [],
+    "isInitialReport": false,
+    "created": 1730435174000,
+    "isMajor": false,
+    "name": null,
+    "subCategoryA": "null",
+    "adviceA": "Check signage",
+    "adviceB": "Exercise caution",
+    "adviceC": " ",
+    "end": 1845985500000,
+    "incidentKind": "Planned",
+    "mainCategory": "CHANGED TRAFFIC CONDITIONS",
+    "lastUpdated": 1731039229940,
+    "otherAdvice": "<p>Changed traffic conditions … will be in place at various times along Mamre Rd …</p>",
+    "arrangementElements": [],
+    "diversions": "",
+    "additionalInfo": [],
+    "weblinkName": null,
+    "attendingGroups": null,
+    "encodedPolylines": [],
+    "duration": null,
+    "start": 1730407620000,
+    "displayName": "CHANGED TRAFFIC CONDITIONS Mamre Road upgrade",
+    "roads": [
+      {
+        "conditionTendency": "",
+        "crossStreet": "M4 Motorway",
+        "delay": "",
+        "impactedLanes": [],
+        "locationQualifier": "between",
+        "mainStreet": "Mamre Road",
+        "quadrant": "",
+        "queueLength": 0,
+        "region": "Sydney",
+        "secondLocation": "Erskine Park Road",
+        "suburb": "St Clair to Erskine Park",
+        "trafficVolume": ""
+      }
+    ],
+    "isLocalRoad": "State road",
+    "CategoryIcon": "ChangedConditions"
   }
 }
 ```
 
-### Main Category Values
-
-| mainCategory | Description |
-|-------------|-------------|
-| `CRASH` | Vehicle crashes / collisions |
-| `BREAKDOWN` | Vehicle breakdowns |
-| `HAZARD` | Road hazards (debris, animals, spills) |
-| `ROADWORK` | Planned and emergency roadworks |
-| `FLOOD` | Flooding on roads |
-| `FIRE` | Bush/structure fires affecting roads |
-| `ALPINE` | Alpine road conditions |
-| `MAJOREVENT` | Major events affecting traffic |
-
-### Key Fields for Analysis
+### Property field reference (verbatim field names, types, semantics)
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `mainCategory` | string | Incident type — the key classifier |
-| `created` | ISO 8601 | When the incident was first reported |
-| `ended` | ISO 8601 / null | When the incident was resolved (null if ongoing) |
-| `geometry.coordinates` | [lon, lat] | GPS location |
-| `roads[].suburb` | string | Suburb name |
-| `roads[].mainStreet` | string | Road name |
-| `roads[].impactedLanes` | array | Lane closure details |
-| `duration` | string | Human-readable duration |
-| `incidentKind` | string | Sub-type (e.g., "Collision", "Stalled vehicle") |
-| `subCategoryA` / `subCategoryB` | string | Further classification |
-| `isMajor` | boolean | Major incident flag |
+| `webLinks` | `Array<{linkText: string, linkURL: string}>` | Preferred URL source; replaces deprecated `weblinkUrl` |
+| `headline` | string | Short one-line summary; may be empty |
+| `periods` | array | Recurrence periods; usually empty |
+| `speedLimit` | number | `-1` = not applicable; otherwise km/h |
+| `weblinkUrl` | string \| null | **Deprecated** — almost always null in real data; use `webLinks` |
+| `expectedDelay` | number | Minutes. `-1` = unknown |
+| `ended` | **boolean** | `true` = resolved, `false` = active. NOT a timestamp |
+| `isNewIncident` | boolean | (was documented as `isNew` — wrong) |
+| `publicTransport` | **string** | Free-text. NOT a `{affectedBusRoutes, affectedTrainLines}` object |
+| `impactingNetwork` | boolean | (was documented as `isImpactNetwork` — wrong) |
+| `subCategoryB` | string \| null | Observed: always null in current snapshot |
+| `arrangementAttachments` | array | |
+| `isInitialReport` | boolean | |
+| `created` | **number (epoch ms)** | e.g. `1730435174000` — NOT ISO 8601 |
+| `isMajor` | boolean | |
+| `name` | null | Always null in observed data |
+| `subCategoryA` | string | Can be the literal string `"null"` (4 chars) as well as real values |
+| `adviceA`, `adviceB`, `adviceC` | string | Three advice slots (previously documented as only two) |
+| `end` | **number (epoch ms)** | Resolved-at timestamp (distinct from `ended` bool flag) |
+| `incidentKind` | string | `"Planned"` or `"Unplanned"` (observed enum) |
+| `mainCategory` | string (UPPERCASE) | Open enum — see table below |
+| `lastUpdated` | **number (epoch ms)** | |
+| `otherAdvice` | string (HTML) | May contain `<p>`, `<a>` etc. |
+| `arrangementElements` | array | |
+| `diversions` | string | May be HTML |
+| `additionalInfo` | array | |
+| `weblinkName` | string \| null | |
+| `attendingGroups` | `Array<string>` \| null | e.g. `["NSW Police", "Fire & Rescue"]` |
+| `encodedPolylines` | `Array<string>` | Google-encoded polylines for affected segments |
+| `duration` | string \| null | Human-readable, e.g. `"02h 15m"` |
+| `start` | **number (epoch ms)** | |
+| `displayName` | string | Typically `${mainCategory} ${description}` |
+| `roads` | `Array<Road>` | See Road shape below |
+| `isLocalRoad` | **string** | `"State road"` or `"Local road"` — NOT a boolean |
+| `CategoryIcon` | string | UI hint, parallels `mainCategory` |
+| `hideEndDate` | boolean | When `true`, treat `end` as not-yet-known even if a value is present (for open-ended items) |
+
+### Road shape (`properties.roads[]`)
+
+```ts
+{
+  region: string,              // e.g. "Sydney", "SYD_MET"
+  mainStreet: string,          // "Mamre Road"
+  crossStreet: string,         // "M4 Motorway"
+  secondLocation: string,      // Used when locationQualifier = "between"
+  locationQualifier: string,   // "at" | "between" | "near"
+  suburb: string,              // e.g. "St Clair to Erskine Park"
+  conditionTendency: string,   // "deteriorating" | "improving" | ""
+  quadrant: string,
+  trafficVolume: string,
+  queueLength: number,
+  delay: string,
+  impactedLanes: Array<ImpactedLane>,
+}
+```
+
+### ImpactedLane shape (`properties.roads[].impactedLanes[]`)
+
+```ts
+{
+  affectedDirection: string,   // e.g. "Both directions", "Northbound"
+  closedLanes: string,         // free-text, e.g. "1 of 3 lanes closed" — may be ""
+  description: string,         // advisory text — may be ""
+  extent: string,              // e.g. "Affected", "Closed"
+  numberOfLanes: string,       // string not number — may be ""
+  roadType: string,            // may be ""
+}
+```
+
+### Observed enum values
+
+| Field | Observed values (open enum — treat as extensible) |
+|-------|---------------------------------------------------|
+| `mainCategory` | `CRASH`, `BREAKDOWN`, `HAZARD`, `ROADWORK`, `EMERGENCY ROADWORK`, `FLOOD`, `FIRE`, `ALPINE`, `MAJOREVENT`, `CHANGED TRAFFIC CONDITIONS`, `ADVERSE WEATHER`, `TRAFFIC LIGHTS BLACKED OUT`, `TRAFFIC LIGHTS FLASHING YELLOW` |
+| `incidentKind` | `Planned`, `Unplanned` |
+| `subCategoryA` | `"null"` (literal string), `"Road damage"`, `"Landslide"`, plus incident-specific values like `"Multi-vehicle"`, `"Stalled vehicle"`, etc. |
+| `CategoryIcon` | `Crash`, `Hazard`, `Breakdown`, `Roadwork`, `Flood`, `Fire`, `Alpine`, `MajorEvent`, `ChangedConditions`, `AdverseWeather` (usually tracks `mainCategory` case-folded) |
+| `isLocalRoad` | `"State road"`, `"Local road"` |
+
+### Behavioural quirks (these affect scraper design)
+
+1. **`/incident/all` returns Planned items too.** Filter client-side on
+   `incidentKind != "Planned"` AND `mainCategory in {CRASH, BREAKDOWN,
+   HAZARD}` to isolate genuine unplanned disruptions (crashes, breakdowns,
+   debris/animals/spills). Weather and traffic-conditions changes also
+   appear here.
+2. **Timestamps are epoch milliseconds**, not ISO 8601. Convert with
+   `datetime.fromtimestamp(ms / 1000, tz=timezone.utc).astimezone(ZoneInfo("Australia/Sydney"))`.
+3. **Missing numeric data uses `-1`** (`speedLimit`, `expectedDelay`). Don't
+   treat `-1` as a valid 0 km/h or 0 min.
+4. **`subCategoryA` can be the string `"null"`** — guard against it alongside
+   real null.
+5. **`ended` (boolean) is the resolved flag; `end` (number) is the resolved
+   timestamp** — two different fields with overlapping names.
+6. **Dedup key**: `Feature.id` at the top level (not `properties.id`).
+   Stable across updates to the same incident.
+7. **Non-standard GeoJSON extension**: `geometry.collections: []` appears
+   on every Point. Harmless but may trigger strict validators — prefer a
+   lenient GeoJSON parser.
 
 ---
 
@@ -105,9 +207,9 @@
 
 **Endpoint**: `POST https://api.transport.nsw.gov.au/v1/traffic/historicaldata`
 **Auth**: `Authorization: apikey YOUR_KEY`
-**Format**: JSON (similar structure to live hazards but with historical records)
-
-The Historical API uses the same incident schema as the live API but supports date-range queries. The response format includes the same GeoJSON-style features with all the fields listed above.
+**Format**: JSON — feature shape per §1 above, returned with all the same
+fields (epoch-ms timestamps, `ended` boolean flag, `webLinks[]`, etc.). The
+Historical API is the same feature envelope with date-range querying.
 
 **Query parameters** (POST body):
 ```json

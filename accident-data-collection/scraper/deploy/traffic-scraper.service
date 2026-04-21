@@ -1,0 +1,21 @@
+[Unit]
+Description=Traffic incident scraper — polls TfNSW, QLDTraffic, DTP Vic; writes to S3
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+# Path to the scraper checkout — adjust if you deploy elsewhere
+WorkingDirectory=/opt/traffic-scraper
+EnvironmentFile=/opt/traffic-scraper/.env
+ExecStart=/opt/traffic-scraper/.venv/bin/python /opt/traffic-scraper/poll.py
+User=ubuntu
+Group=ubuntu
+# Tight sandbox — no write access outside tmp
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/tmp /var/tmp
+PrivateTmp=true
+# If a single poll takes >4 min, kill it — next timer firing will retry
+TimeoutStartSec=240
